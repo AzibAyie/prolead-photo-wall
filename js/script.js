@@ -702,7 +702,7 @@ var PROG = [
 ];
 var MELODY = [ // the hook: eight swung eighth-notes per bar, 0 = rest
   [76,0,74,72,0,69,72,0], [71,0,68,0,71,74,0,0], [72,0,76,0,79,0,76,74], [74,72,0,70,0,67,0,0],
-  [76,0,74,72,0,69,72,76], [77,0,76,0,71,0,68,0], [69,0,72,76,0,81,0,79], [76,0,74,0,72,0,0,0]
+  [76,0,74,72,0,69,72,76], [76,0,74,0,71,0,68,0], [69,0,72,76,0,81,0,79], [76,0,74,0,72,0,0,0]
 ];
 function midiHz(m){ return 440 * Math.pow(2, (m - 69) / 12); }
 function musicNote(dest, m, t, dur, type, vol, attack){
@@ -717,7 +717,7 @@ function musicNote(dest, m, t, dur, type, vol, attack){
 // warm electric-piano note: two slightly detuned sines plus a soft octave, through the tremolo bus
 function keyNote(m, t, dur, vol){
   var g = audioCtx.createGain(), f = midiHz(m);
-  [[f * .998, 1], [f * 1.002, 1], [f * 2, .15]].forEach(function(p){
+  [[f * .998, 1], [f * 1.002, 1], [f * 2, .35], [f * 3, .12]].forEach(function(p){
     var o = audioCtx.createOscillator(), og = audioCtx.createGain();
     o.type = 'sine'; o.frequency.value = p[0]; og.gain.value = p[1];
     o.connect(og); og.connect(g);
@@ -734,8 +734,8 @@ function drumHit(kind, t, vol){
   g.connect(b.drums);
   if(kind === 'kick'){
     var o = audioCtx.createOscillator();
-    o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(42, t + .14);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .32);
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(62, t + .09);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.001, t + .32);
     o.connect(g); o.start(t); o.stop(t + .35);
     return;
   }
@@ -743,7 +743,7 @@ function drumHit(kind, t, vol){
   src.buffer = b.noise;
   if(kind === 'snare'){ f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = .7; }
   else { f.type = 'highpass'; f.frequency.value = 7000; }
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + len);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.001, t + len);
   src.connect(f); f.connect(g);
   src.start(t, Math.random() * .5); src.stop(t + len + .02);
 }
@@ -752,20 +752,21 @@ function scheduleBar(t, i){
   function at(k){ return t + k*EIGHTH + (k % 2 ? SWING : 0); }   // swung eighths
   PROG[i % PROG.length].forEach(function(c){
     var st = t + c[0]*BEAT, len = c[1]*BEAT;
-    c[3].forEach(function(m, k){ keyNote(m, st + k*.012, len * .92, .05); });     // gently strummed chord
-    musicNote(b.bass, c[2], st, BEAT*1.4, 'triangle', .32, .02);                   // bass
-    if(c[1] === 4) musicNote(b.bass, c[2], st + BEAT*2.5 + SWING, BEAT*1.2, 'triangle', .24, .02);
+    c[3].forEach(function(m, k){ keyNote(m, st + k*.012, len * .92, .075); });     // gently strummed chord
+    musicNote(b.bass, c[2] + 12, st, BEAT*1.4, 'triangle', .14, .02);                  // bass
+    if(c[1] === 4) musicNote(b.bass, c[2] + 12, st + BEAT*2.5 + SWING, BEAT*1.2, 'triangle', .1, .02);
   });
   if(i >= 2){                                                                       // drums join after a short intro
-    drumHit('kick', at(0), .75); drumHit('kick', at(3), .6);
-    if(i % 2) drumHit('kick', at(5), .35);
-    drumHit('snare', at(2), .26); drumHit('snare', at(6), .26);
-    for(var k=0; k<8; k++) drumHit('hat', at(k), k % 2 ? .03 : .05);
+    drumHit('kick', at(0), .42); drumHit('kick', at(3), .32);
+    if(i % 2) drumHit('kick', at(5), .2);
+    drumHit('snare', at(2), .3); drumHit('snare', at(6), .3);
+    for(var k=0; k<8; k++) drumHit('hat', at(k), k % 2 ? .05 : .08);
   }
   if(i >= 4) mel.forEach(function(m, k){                                           // the hook comes in after the intro
     if(!m) return;
-    musicNote(b.lead, m, at(k), 1.0, 'sine', .1, .008);
-    musicNote(b.lead, m, at(k), .7, 'triangle', .045, .01);
+    musicNote(b.lead, m, at(k), 1.0, 'sine', .17, .008);
+    musicNote(b.lead, m, at(k), .7, 'triangle', .08, .01);
+    musicNote(b.lead, m + 12, at(k), .45, 'sine', .035, .006);
   });
 }
 function musicTick(){
@@ -777,7 +778,7 @@ function musicTick(){
 function buildMusicBus(){
   var c = audioCtx;
   var master = c.createGain(), comp = c.createDynamicsCompressor(), tape = c.createBiquadFilter();
-  tape.type = 'lowpass'; tape.frequency.value = 3200;                               // soft "old tape" top end
+  tape.type = 'lowpass'; tape.frequency.value = 6000;                               // soft "old tape" top end
   tape.connect(comp); comp.connect(master); master.connect(c.destination);
   master.gain.value = .0001;
   // electric piano with a slow tremolo wobble
@@ -796,9 +797,9 @@ function buildMusicBus(){
   var noise = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = noise.getChannelData(0);
   for(var i=0; i<nd.length; i++) nd[i] = Math.random() * 2 - 1;
   var vinyl = c.createBuffer(1, c.sampleRate * 3, c.sampleRate), vd = vinyl.getChannelData(0);
-  for(var j=0; j<vd.length; j++) vd[j] = (Math.random() * 2 - 1) * .015 + (Math.random() < .0004 ? (Math.random() - .5) * .9 : 0);
+  for(var j=0; j<vd.length; j++) vd[j] = (Math.random() * 2 - 1) * .015 + (Math.random() < .0002 ? (Math.random() - .5) * .4 : 0);
   var crackle = c.createBufferSource(), crackleVol = c.createGain(), crackleTone = c.createBiquadFilter();
-  crackle.buffer = vinyl; crackle.loop = true; crackleVol.gain.value = .35;
+  crackle.buffer = vinyl; crackle.loop = true; crackleVol.gain.value = .25;
   crackleTone.type = 'bandpass'; crackleTone.frequency.value = 2500; crackleTone.Q.value = .5;
   crackle.connect(crackleTone); crackleTone.connect(crackleVol); crackleVol.connect(master); crackle.start();
   return {master:master, keys:keys, bass:bass, drums:drums, lead:lead, noise:noise};
@@ -806,6 +807,7 @@ function buildMusicBus(){
 // Browsers keep audio muted until the visitor taps. Only count the music as playing once the
 // browser has really unmuted; otherwise stay "waiting" and try again on the next tap.
 function startMusic(){
+  try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
   if(music.playing || !music.on) return;
   // Only try while the browser counts this as a real tap; an early attempt (e.g. the moment a finger
   // lands on a phone) gets put on hold by the browser and would swallow the tap that does count.
@@ -827,7 +829,7 @@ function beginMusic(){
   try{
     if(!music.bus) music.bus = buildMusicBus();
     music.bus.master.gain.cancelScheduledValues(audioCtx.currentTime);
-    music.bus.master.gain.setTargetAtTime(.8, audioCtx.currentTime, 1.5);   // gentle fade in
+    music.bus.master.gain.setTargetAtTime(1, audioCtx.currentTime, 1.5);   // gentle fade in
     music.nextBar = audioCtx.currentTime + .1;
     music.bar = 0;
     music.timer = setInterval(musicTick, 250);
