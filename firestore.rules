@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Paste this into Firebase console → Firestore Database → Rules, and replace
+// ADMIN_EMAIL_HERE with the admin account's email (same as adminEmail in js/firebase-config.js).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'ADMIN_EMAIL_HERE';
+    }
+
+    function validNewPost(d) {
+      return d.keys().hasOnly(['title','category','description','displayName','anonymous','group','image','isInfographic','date','status'])
+        && d.status == 'pending'
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.category is string && d.category.size() <= 30
+        && d.description is string && d.description.size() <= 280
+        && d.displayName is string && d.displayName.size() <= 40
+        && d.anonymous is bool && d.isInfographic is bool
+        && d.group is string && d.group.size() <= 2
+        && d.date is string && d.date.size() <= 40
+        && d.image is string && d.image.size() < 160000;
+    }
+
+    // photo info + small thumbnail
+    match /posts/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if validNewPost(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    // full-size photo, created together with its post
+    match /images/{id} {
+      allow read: if isAdmin() || get(/databases/$(database)/documents/posts/$(id)).data.status == 'approved';
+      allow create: if request.resource.data.keys().hasOnly(['full'])
+        && request.resource.data.full is string && request.resource.data.full.size() < 950000
+        && getAfter(/databases/$(database)/documents/posts/$(id)).data.status == 'pending';
+      allow delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLead Photo Wall</title>
+<meta name="description" content="Share photos from ProLead: Dare to Lead Camp 2026 at SK Kedaik, Muadzam Shah.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="blob-field">
+  <div class="blob g floaty" style="width:340px;height:340px; top:-120px; left:-100px;"></div>
+  <div class="blob p floaty" style="width:260px;height:260px; top:40px; right:-80px; animation-delay:1s"></div>
+</div>
+
+<nav class="topnav">
+  <div class="container nav-inner">
+    <a href="#home" class="logo">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><rect x="3" y="3" width="24" height="24" rx="9" fill="var(--green)"/><path d="M8.5 20.5l1-9 3.3 3.2L15 9l2.2 5.7 3.3-3.2 1 9z" fill="var(--gold)" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      ProLead
+    </a>
+    <div class="navlinks" id="navlinks">
+      <a href="#home" class="navlink" data-route="home">Home</a>
+      <a href="#explore" class="navlink" data-route="explore">Explore</a>
+      <a href="#infographics" class="navlink" data-route="infographics">Infographics</a>
+      <a href="#submit" class="navlink" data-route="submit">Share</a>
+      <a href="#admin" class="navlink admin" data-route="admin">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+
+  <!-- HOME -->
+  <section class="view" id="view-home">
+    <div class="hero blob-field">
+      <div class="blob p" style="width:220px;height:220px; top:10px; right:10%; opacity:.25"></div>
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Student Volunteer Force UPTM × SK Kedaik</span>
+          <h1>ProLead: Dare to Lead 👑</h1>
+          <p>Share your best moments from our four-day leadership camp at SK Kedaik, Muadzam Shah (24–27 November 2026). Every photo is checked by the admin team before it goes up.</p>
+          <div class="camp-stats">
+            <div><b>4</b><span>days</span></div>
+            <div><b>94</b><span>young leaders</span></div>
+            <div><b>20</b><span>facilitators</span></div>
+            <div><b>12</b><span>groups</span></div>
+          </div>
+          <div class="hero-actions">
+            <a href="#explore" class="btn btn-primary">See Camp Photos</a>
+            <a href="#submit" class="btn btn-accent">🎮 Play Photo Quest</a>
+          </div>
+        </div>
+        <div class="hero-art floaty" style="--r:-2deg">
+          <div class="tagline">Murid Berilmu, Pemimpin Masa Depan</div>
+          <svg viewBox="0 0 360 320" width="100%">
+            <rect x="30" y="40" width="150" height="120" rx="20" fill="var(--green-tint)"/>
+            <rect x="30" y="40" width="150" height="120" rx="20" fill="none" stroke="var(--green)" stroke-width="3"/>
+            <circle cx="70" cy="80" r="14" fill="var(--green)"/>
+            <path d="M44 150l35-38 28 24 20-22 32 36" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="190" y="90" width="140" height="110" rx="20" fill="var(--purple-tint)"/>
+            <rect x="190" y="90" width="140" height="110" rx="20" fill="none" stroke="var(--purple)" stroke-width="3"/>
+            <rect x="212" y="112" width="55" height="10" rx="5" fill="var(--purple)"/>
+            <rect x="212" y="132" width="90" height="8" rx="4" fill="var(--purple)" opacity=".5"/>
+            <rect x="212" y="150" width="70" height="8" rx="4" fill="var(--purple)" opacity=".5"/>
+            <circle cx="90" cy="235" r="32" fill="none" stroke="var(--green)" stroke-width="4" stroke-dasharray="6 7"/>
+            <path d="M80 235l7 7 15-16" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M230 230q20-22 40 0t40 0" fill="none" stroke="var(--purple)" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Camp Moments</h2></div>
+      <div class="chip-row" id="home-categories"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Latest From Camp</h2>
+        <a href="#explore" class="btn btn-ghost btn-sm">See all</a>
+      </div>
+      <div class="grid" id="home-recent"></div>
+    </div>
+
+    <div class="section" id="home-featured-wrap">
+      <div class="section-head"><h2>Featured Infographic</h2></div>
+      <div id="home-featured"></div>
+    </div>
+  </section>
+
+  <!-- EXPLORE -->
+  <section class="view" id="view-explore" hidden>
+    <div class="section" style="padding-bottom:0">
+      <h2 style="margin-top:28px">Explore Posts</h2>
+      <p class="hint" style="margin-bottom:18px">Browse approved camp photos by moment, or search for a title, group or name.</p>
+      <div class="search-row" style="margin-bottom:18px">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+          <input type="text" id="explore-search" placeholder="Search photos, moments, groups, or people…">
+        </div>
+      </div>
+      <div class="chip-row" id="explore-categories" style="margin-bottom:28px"></div>
+    </div>
+    <div class="section" style="padding-top:0">
+      <div class="grid" id="explore-grid"></div>
+    </div>
+  </section>
+
+  <!-- INFOGRAPHICS -->
+  <section class="view" id="view-infographics" hidden>
+    <div class="section" style="padding-bottom:0">
+      <h2 style="margin-top:28px">Infographics Gallery</h2>
+      <p class="hint" style="margin-bottom:18px">Quick, visual knowledge. Filter by category and tap to view full size.</p>
+      <div class="chip-row" id="info-categories" style="margin-bottom:28px"></div>
+    </div>
+    <div class="section" style="padding-top:0">
+      <div class="grid" id="info-grid"></div>
+    </div>
+  </section>
+
+  <!-- SUBMIT: Photo Quest -->
+  <section class="view" id="view-submit" hidden>
+    <div class="section quest">
+      <div class="quest-head">
+        <div>
+          <span class="eyebrow">Photo Quest</span>
+          <h2>Feed Mochi a camp photo!</h2>
+          <p class="hint">Finish the four missions to send your post off for review. Bonus quests earn extra XP and stars.</p>
+        </div>
+        <div class="hud">
+          <div class="hud-level"><b id="hud-level">1</b><span>LVL</span></div>
+          <div class="hud-xp">
+            <div class="hud-xp-top"><span id="hud-title">Sprout Sharer</span><span id="hud-xp-num">0 / 200 XP</span></div>
+            <div class="xp-track"><div class="xp-bar" id="hud-xp-bar"></div></div>
+          </div>
+          <button type="button" class="icon-btn" id="sound-toggle" title="Toggle sound" aria-pressed="true">🔊</button>
+        </div>
+      </div>
+
+      <div class="quest-grid">
+        <aside class="stage" id="stage">
+          <div class="bubble" id="mochi-bubble" aria-live="polite">Hi! I'm Mochi. I'm sooo hungry for photos!</div>
+          <button type="button" class="mochi-btn" id="mochi" data-mood="idle" aria-label="Poke Mochi">
+            <svg class="mochi-svg" viewBox="0 0 200 190" width="170" height="162" aria-hidden="true">
+              <path d="M78 38L82 12L93 25L100 8L107 25L118 12L122 38Z" fill="#FFD86B" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/>
+              <circle cx="100" cy="27" r="3.5" fill="#FF9EC7"/>
+              <path class="m-body" d="M100 30C152 30 186 78 186 122C186 162 150 178 100 178C50 178 14 162 14 122C14 78 48 30 100 30Z"/>
+              <ellipse cx="66" cy="64" rx="16" ry="8" fill="#fff" transform="rotate(-28 66 64)"/>
+              <ellipse class="m-cheek" cx="50" cy="132" rx="13" ry="8"/>
+              <ellipse class="m-cheek" cx="150" cy="132" rx="13" ry="8"/>
+              <g id="m-eyes">
+                <g class="m-eyes-open">
+                  <ellipse cx="74" cy="110" rx="9" ry="12" fill="#1D2B24"/><circle cx="77" cy="105" r="3.4" fill="#fff"/>
+                  <ellipse cx="126" cy="110" rx="9" ry="12" fill="#1D2B24"/><circle cx="129" cy="105" r="3.4" fill="#fff"/>
+                </g>
+                <g class="m-eyes-happy" fill="none" stroke="#1D2B24" stroke-width="5" stroke-linecap="round">
+                  <path d="M64 113Q74 100 84 113"/><path d="M116 113Q126 100 136 113"/>
+                </g>
+              </g>
+              <path class="m-tear" d="M62 122q-5 9 0 12q5-3 0-12z" fill="#7CC6F2"/>
+              <path class="m-mouth m-idle" d="M90 134Q100 144 110 134" stroke="#1D2B24" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <g class="m-mouth m-hungry"><ellipse cx="100" cy="142" rx="16" ry="14" fill="#5B2A35"/><ellipse cx="100" cy="150" rx="9" ry="5" fill="#F27B92"/></g>
+              <path class="m-mouth m-chomp" d="M84 138l5 5 5-5 5 5 5-5 5 5 5-5" stroke="#1D2B24" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <g class="m-mouth m-happy"><path d="M85 131Q100 156 115 131Z" fill="#5B2A35"/><path d="M92 142Q100 149 108 142Q100 138 92 142Z" fill="#F27B92"/></g>
+              <path class="m-mouth m-sad" d="M89 143Q100 132 111 143" stroke="#1D2B24" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <ellipse class="m-mouth m-think" cx="105" cy="139" rx="5" ry="6" fill="#5B2A35"/>
+            </svg>
+          </button>
+          <div class="mochi-shadow"></div>
+
+          <ol class="missions">
+            <li data-step="photo"><span class="star">★</span>Feed Mochi a photo</li>
+            <li data-step="title"><span class="star">★</span>Give it a name</li>
+            <li data-step="cat"><span class="star">★</span>Pick the camp moment</li>
+            <li data-step="name"><span class="star">★</span>Sign &amp; confirm</li>
+          </ol>
+
+          <div class="shelf-head">Badges</div>
+          <div class="badge-shelf" id="badge-shelf"></div>
+        </aside>
+
+        <div class="quest-main">
+          <form id="submit-form" class="quest-card" novalidate>
+            <div class="mission-label" data-step="photo"><span class="m-num">1</span>Feed Mochi a photo</div>
+            <div class="field">
+              <div class="dropzone bowl" id="dropzone" tabindex="0" role="button" aria-label="Choose a photo to upload">
+                <svg class="bowl-art" width="92" height="70" viewBox="0 0 92 70" fill="none" aria-hidden="true">
+                  <rect x="26" y="4" width="40" height="32" rx="6" fill="var(--purple-tint)" stroke="var(--purple)" stroke-width="3"/>
+                  <circle cx="37" cy="15" r="4" fill="var(--purple)"/>
+                  <path d="M30 32l10-10 8 7 6-5 9 8" stroke="var(--purple)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 40h80c0 14-16 26-40 26S6 54 6 40z" fill="var(--green-tint)" stroke="var(--green)" stroke-width="3" stroke-linejoin="round"/>
+                  <path d="M20 48c6 6 14 9 26 9" stroke="var(--green)" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+                </svg>
+                <div class="dz-title">Drop a photo in Mochi's bowl</div>
+                <div class="hint">or <u>browse your files</u> · or paste with Ctrl+V</div>
+                <input type="file" id="file-input" accept="image/*" hidden>
+              </div>
+
+              <div class="munch" id="munch" hidden>
+                <div class="munch-text"><span>Mochi is munching…</span><b id="munch-pct">0%</b></div>
+                <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+              </div>
+
+              <div class="polaroid-wrap" id="preview-wrap" hidden>
+                <div class="polaroid" id="polaroid">
+                  <div class="photo-frame" id="photo-frame">
+                    <img id="preview-img" alt="Your photo" draggable="false">
+                    <div class="sticker-layer" id="sticker-layer"></div>
+                  </div>
+                  <div class="polaroid-caption" id="polaroid-caption">Untitled masterpiece</div>
+                  <div class="preview-actions">
+                    <button type="button" class="icon-btn" id="btn-replace" title="Swap photo">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2"><path d="M21 12a9 9 0 11-3-6.7" stroke-linecap="round"/><path d="M21 3v6h-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class="icon-btn" id="btn-remove" title="Remove photo">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="sticker-tray">
+                  <div class="tray-label">✨ Bonus: decorate it! <span class="hint">Tap to add · drag to move · drag off the photo to remove</span></div>
+                  <div class="tray" id="sticker-tray"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mission-label" data-step="title"><span class="m-num">2</span><label for="f-title">Give it a name</label></div>
+            <div class="field">
+              <input type="text" id="f-title" placeholder="Something catchy, like “Group 5 conquers checkpoint 2”" maxlength="80" autocomplete="off">
+            </div>
+
+            <div class="mission-label" data-step="cat"><span class="m-num">3</span>Which camp moment?</div>
+            <div class="field">
+              <div class="chip-row" id="submit-categories"></div>
+            </div>
+
+            <div class="mission-label" data-step="name"><span class="m-num">4</span><label for="f-name">Sign &amp; confirm</label></div>
+            <div class="field">
+              <div class="name-row">
+                <input type="text" id="f-name" maxlength="40" placeholder="How should we credit you?" autocomplete="nickname">
+                <label class="anon-toggle"><div class="toggle" id="anon-toggle" role="switch" aria-checked="false" tabindex="0"><i></i></div> Secret agent mode</label>
+              </div>
+              <div class="check-row consent" id="consent-check" role="checkbox" aria-checked="false" tabindex="0"><div class="check" id="consent-box"></div> I took this photo or have permission to share it, and the people in it are OK with it being posted.</div>
+            </div>
+
+            <div class="bonus-box">
+              <div class="mission-label bonus"><span class="m-num">★</span>Bonus quests</div>
+              <div class="field">
+                <label for="f-desc">Tell the story <span class="hint" style="display:inline">(+15 XP for 10+ characters)</span></label>
+                <textarea id="f-desc" maxlength="280" placeholder="Add a little context or story…"></textarea>
+              </div>
+              <div class="field">
+                <label for="f-group">Tag a group <span class="hint" style="display:inline">(+10 XP)</span></label>
+                <select id="f-group"><option value="">No group / whole camp</option></select>
+              </div>
+              <div class="check-row" id="infographic-check" role="checkbox" aria-checked="false" tabindex="0"><div class="check" id="info-check-box"></div> This is an infographic <span class="hint" style="margin:0">(+10 XP)</span></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary launch locked" id="submit-btn">🔒 4 missions left</button>
+            <div class="run-xp">This run: <b id="run-xp">+0 XP</b></div>
+          </form>
+
+          <div class="quest-card level-clear" id="success-box" hidden>
+            <div class="clear-stars" id="clear-stars"><span class="big-star">★</span><span class="big-star mid">★</span><span class="big-star">★</span></div>
+            <h3>Quest complete!</h3>
+            <div class="xp-earned">+<b id="xp-earned">0</b> XP</div>
+            <div class="levelup" id="levelup" hidden></div>
+            <div class="new-badges" id="new-badges"></div>
+            <p class="hint" id="clear-hint">Mochi delivered your post to the moderators. It'll show up once it's approved.</p>
+            <div class="clear-actions">
+              <button type="button" class="btn btn-primary" id="share-another">Play again</button>
+              <a href="#explore" class="btn btn-ghost">Explore posts</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="view" id="view-admin" hidden>
+    <div id="admin-gate" class="pw-wrap">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 118 0v4"/></svg>
+      <h3 style="margin:14px 0 6px">Admin Sign-in</h3>
+      <p class="hint" style="margin-bottom:18px">This area is for moderators only.</p>
+      <input type="email" id="admin-email" placeholder="Admin email" autocomplete="username" hidden style="width:100%; border:2px solid var(--line); border-radius:12px; padding:11px 15px; text-align:center; font-family:var(--font-body); background:var(--bg); color:var(--ink); margin-bottom:12px">
+      <input type="text" id="admin-pw" placeholder="Enter admin passcode" autocomplete="current-password" style="width:100%; border:2px solid var(--line); border-radius:12px; padding:11px 15px; text-align:center; font-family:var(--font-body); background:var(--bg); color:var(--ink); margin-bottom:12px">
+      <button class="btn btn-accent" style="width:100%" id="admin-login">Sign In</button>
+      <p class="hint" style="margin-top:14px" id="admin-gate-hint">Demo mode passcode: <b>admin123</b>. Once Firebase is set up, this becomes a real email + password sign-in.</p>
+    </div>
+
+    <div id="admin-panel" hidden>
+      <div class="section-head" style="margin-top:28px">
+        <div>
+          <span class="eyebrow">Moderation</span>
+          <h2 style="margin-top:4px">Admin Dashboard</h2>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="admin-logout">Sign Out</button>
+      </div>
+
+      <div class="stat-row" id="admin-stats"></div>
+      <div class="tab-row" id="admin-tabs">
+        <button class="tab active" data-status="pending">Pending</button>
+        <button class="tab" data-status="approved">Approved</button>
+        <button class="tab" data-status="rejected">Rejected</button>
+      </div>
+      <div class="admin-list" id="admin-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">Made with 💜 by Student Volunteer Force UPTM · ProLead: Dare to Lead Camp 2026</div>
+</footer>
+
+<!-- Post detail modal -->
+<div class="scrim" id="post-scrim">
+  <div class="modal modal-pos" id="post-modal">
+    <button class="icon-btn modal-close" id="post-close" style="background:rgba(0,0,0,.35); border:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+    </button>
+    <img class="modal-img" id="post-modal-img" alt="">
+    <div class="modal-body" id="post-modal-body"></div>
+  </div>
+</div>
+<div class="zoomed" id="zoom-scrim"><img id="zoom-img" alt=""></div>
+
+<!-- Admin review modal -->
+<div class="scrim" id="review-scrim">
+  <div class="modal modal-pos" id="review-modal">
+    <button class="icon-btn modal-close" id="review-close" style="background:rgba(0,0,0,.35); border:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+    </button>
+    <img class="modal-img" id="review-modal-img" alt="" style="cursor:zoom-in">
+    <div class="modal-body" id="review-modal-body"></div>
+  </div>
+</div>
+
+<!-- Confirm overlay -->
+<div class="scrim" id="confirm-scrim">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-body confirm-box" id="confirm-body"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
