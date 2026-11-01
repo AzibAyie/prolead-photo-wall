@@ -693,3 +693,23 @@ body.show-mode{overflow:hidden}
   .show-board{display:none}
 }
 .navlink.show-link{background:var(--sky-tint)}
+
+/* ===== cozy music toggle ===== */
+.music-btn{position:fixed; left:max(16px, env(safe-area-inset-left,0px)); bottom:max(16px, env(safe-area-inset-bottom,0px)); z-index:95;
+  height:52px; min-width:52px; padding:0 14px; border-radius:999px; border:3px solid var(--outline); background:#fff; box-shadow:0 4px 0 var(--outline);
+  display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--outline); transition:transform .2s cubic-bezier(.34,1.56,.64,1), background .2s}
+.music-btn:hover{transform:translateY(-3px) rotate(-4deg); background:var(--sun-tint)}
+.music-btn:active{transform:translateY(2px)}
+.music-note{font-size:1.35rem; line-height:1}
+.music-btn[aria-pressed="false"] .music-note{opacity:.4; filter:grayscale(1)}
+.music-btn[aria-pressed="false"]::after{content:""; position:absolute; left:12px; right:12px; top:50%; height:3px; background:var(--outline); border-radius:3px; transform:rotate(-30deg)}
+.eq{display:none; align-items:flex-end; gap:3px; height:20px}
+.eq i{width:4px; border-radius:2px; background:var(--bubble); animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(2){background:var(--sky); animation-delay:.25s} .eq i:nth-child(3){background:var(--minty); animation-delay:.5s}
+@keyframes eq{0%,100%{height:5px}50%{height:20px}}
+.music-btn.playing{background:var(--sun-tint)}
+.music-btn.playing .eq{display:flex}
+.music-btn.waiting{animation:wiggle-btn 1.6s ease-in-out infinite}
+@keyframes wiggle-btn{0%,70%,100%{transform:rotate(0)}75%{transform:rotate(-10deg)}85%{transform:rotate(10deg)}}
+body.show-mode .music-btn{opacity:.35}
+body.show-mode .music-btn:hover{opacity:1}

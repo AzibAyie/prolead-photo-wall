@@ -744,6 +744,105 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
+/* cozy background music: a little lo-fi music-box loop composed in code (no audio file, no copyright) */
+var music = {on: player.music !== false, playing:false, timer:null, bus:null, nextBar:0, bar:0};
+var BEAT = 60 / 72, EIGHTH = BEAT / 2;
+var PROG = [ // [bass, pad chord] as MIDI notes: Fmaj7 Em7 Dm7 Cmaj7 Fmaj7 G6 Em7 Am7
+  [41, [53,57,60,64]], [40, [52,55,59,62]], [38, [50,53,57,60]], [36, [48,52,55,59]],
+  [41, [53,57,60,64]], [43, [55,59,62,64]], [40, [52,55,59,62]], [45, [57,60,64,67]]
+];
+var MELODY = [ // eight eighth-notes per bar, 0 = rest
+  [77,0,76,72,0,69,72,0], [74,0,71,67,0,71,74,0], [72,0,69,65,0,69,72,74], [76,0,0,72,0,67,0,0],
+  [69,72,76,0,77,0,76,72], [74,0,71,74,0,79,0,0], [76,0,74,71,0,67,71,0], [69,0,72,0,76,0,0,0]
+];
+function midiHz(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+function musicNote(dest, m, t, dur, type, vol, attack){
+  var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type; o.frequency.value = midiHz(m);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(dest);
+  o.start(t); o.stop(t + dur + .05);
+}
+function scheduleBar(t, i){
+  var b = music.bus, step = PROG[i % PROG.length], mel = MELODY[i % MELODY.length];
+  step[1].forEach(function(m){ musicNote(b.pad, m, t, BEAT*4 + .6, 'triangle', .05, .7); });   // soft pad
+  musicNote(b.pad, step[0], t, BEAT*1.8, 'sine', .16, .03);                                   // bass
+  musicNote(b.pad, step[0], t + BEAT*2, BEAT*1.8, 'sine', .12, .03);
+  mel.forEach(function(m, k){                                                                  // music box
+    if(!m) return;
+    var at = t + k*EIGHTH + (k % 2 ? .02 : 0);   // a tiny swing
+    musicNote(b.box, m, at, 1.4, 'sine', .09, .005);
+    musicNote(b.box, m + 12, at, .5, 'sine', .015, .005);
+  });
+}
+function musicTick(){
+  while(music.nextBar < audioCtx.currentTime + 1){
+    scheduleBar(music.nextBar, music.bar++);
+    music.nextBar += BEAT * 4;
+  }
+}
+function startMusic(){
+  if(music.playing || !music.on) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    if(!music.bus){
+      var master = audioCtx.createGain(), warm = audioCtx.createBiquadFilter(), delay = audioCtx.createDelay(), fb = audioCtx.createGain();
+      warm.type = 'lowpass'; warm.frequency.value = 1800;
+      delay.delayTime.value = EIGHTH * 1.5; fb.gain.value = .28;
+      var box = audioCtx.createGain(), pad = audioCtx.createGain();
+      box.connect(warm); box.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(warm);
+      pad.connect(warm); warm.connect(master); master.connect(audioCtx.destination);
+      master.gain.value = .0001;
+      music.bus = {master:master, box:box, pad:pad};
+    }
+    music.bus.master.gain.cancelScheduledValues(audioCtx.currentTime);
+    music.bus.master.gain.setTargetAtTime(.55, audioCtx.currentTime, 1.2);   // gentle fade in
+    music.nextBar = audioCtx.currentTime + .1;
+    music.timer = setInterval(musicTick, 250);
+    musicTick();
+    music.playing = true;
+  }catch(e){}
+  renderMusicBtn();
+}
+function stopMusic(){
+  if(!music.playing) return;
+  clearInterval(music.timer);
+  music.bus.master.gain.setTargetAtTime(.0001, audioCtx.currentTime, .3);   // gentle fade out
+  music.playing = false;
+  renderMusicBtn();
+}
+function renderMusicBtn(){
+  var btn = document.getElementById('music-btn');
+  btn.classList.toggle('playing', music.playing);
+  btn.classList.toggle('waiting', music.on && !music.playing);
+  btn.setAttribute('aria-pressed', String(music.on));
+  btn.title = music.on ? 'Cozy music: on (click to turn off)' : 'Cozy music: off (click to turn on)';
+}
+document.getElementById('music-btn').addEventListener('click', function(e){
+  e.stopPropagation();
+  music.unlocked = true;
+  if(music.on && !music.playing){ startMusic(); return; }   // first click just starts it
+  music.on = !music.on;
+  player.music = music.on; savePlayer();
+  if(music.on) startMusic(); else stopMusic();
+  renderMusicBtn();
+});
+// browsers only allow sound after the visitor interacts, so start on the first tap or key press
+['pointerdown','keydown'].forEach(function(ev){
+  document.addEventListener(ev, function(e){
+    if(e.target.closest && e.target.closest('#music-btn')) return;
+    music.unlocked = true;
+    startMusic();
+  });
+});
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden) stopMusic(); else if(music.unlocked) startMusic();
+});
+renderMusicBtn();
+
 /* Mochi the mascot */
 var mochi = document.getElementById('mochi');
 var bubble = document.getElementById('mochi-bubble');
