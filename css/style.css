@@ -584,3 +584,4 @@ footer{border-top:3px dashed #D8CCF0; color:var(--outline); font-weight:700}
 /* keep the decorative blobs behind the content */
 body > .blob-field{position:fixed; inset:0; z-index:0; pointer-events:none}
 main, footer{position:relative; z-index:1}
+.search-box input[type=text]{border:none; background:transparent; box-shadow:none!important; padding:4px 0; border-radius:0}

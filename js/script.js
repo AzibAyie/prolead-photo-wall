@@ -15,58 +15,36 @@ var CATS = [
 function cat(id){ return CATS.find(function(c){return c.id===id}) || CATS[0]; }
 var GROUP_COUNT = 12;
 
-/* ---------- placeholder art generator (data URI, category-tinted) ---------- */
-function placeholderImg(catId, seed){
-  var c = cat(catId);
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'+
-    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'+
-    '<stop offset="0" stop-color="'+c.color+'" stop-opacity="0.85"/>'+
-    '<stop offset="1" stop-color="'+c.color+'" stop-opacity="0.45"/></linearGradient></defs>'+
-    '<rect width="400" height="300" fill="'+c.bg+'"/>'+
-    '<rect width="400" height="300" fill="url(#g)" opacity="0.18"/>'+
-    '<circle cx="'+(60+seed*23%260)+'" cy="'+(70+seed*41%160)+'" r="70" fill="'+c.color+'" opacity="0.22"/>'+
-    '<circle cx="'+(320-seed*17%200)+'" cy="'+(230-seed*29%140)+'" r="90" fill="'+c.color+'" opacity="0.16"/>'+
-    '<g transform="translate(160,110) scale(3.3)">'+
-    '<path d="'+c.icon+'" fill="none" stroke="'+c.color+'" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>'+
-    '</g></svg>';
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
-
-/* ---------- demo posts (placeholder art) — set to false before the real camp ---------- */
+/* ---------- demo posts (img/demo) — set to false before the real camp ---------- */
 var SEED_DEMO = true;
-var SAMPLE_NAMES = ['Media Team','Facilitator','Anonymous','Group 4','Activity Team','Group 9'];
+var DEMO = [
+  // [file, moment, day, hour, title, description, credit, group, status]
+  ['09', 'arrival',   24, 10, 'On the road to Muadzam Shah 🚗', 'Snacks packed, playlist ready. Let\'s go!', 'Facilitator', '', 'approved'],
+  ['08', 'arrival',   24, 15, 'Hello, ASPURI hostel!', 'Our home for the next four days.', 'Media Team', '', 'approved'],
+  ['11', 'arrival',   24, 16, 'Facilitators\' rest room is ready', 'Beds made, fans on. Rest well, team!', 'Logistic Team', '', 'approved'],
+  ['13', 'arrival',   24, 17, 'Room check done ✅', 'Clean, comfy and cute bedsheets.', 'Logistic Team', '', 'approved'],
+  ['02', 'icebreak',  25, 17, 'Group cheer energy!', 'Loudest group wins, and we were LOUD.', 'Media Team', '3', 'approved'],
+  ['14', 'debate',    25, 21, 'The debate chamber is set', 'Order, order! Parliamentary Debate starts tonight.', 'Activity Team', '', 'approved'],
+  ['03', 'questrace', 26,  8, 'Team photo before QuestRace', 'Peace signs up before checkpoint 1!', 'Facilitator', '5', 'approved'],
+  ['10', 'integrity', 26, 10, 'Hall ready for the integrity session', 'Mats down, ready to share and reflect.', 'Activity Team', '', 'approved'],
+  ['04', 'groups',    26, 15, 'Facilitator squad 😎', 'Siput Menyanyi crew, reporting for duty.', 'Media Team', '', 'approved'],
+  ['01', 'groups',    26, 16, 'LDK: Siapa Saya? Thumbs up!', 'Answering the big question with a big thumbs up.', 'Anonymous', '8', 'approved'],
+  ['05', 'cultural',  26, 22, 'Supper after Cultural Night', 'Well earned after that performance!', 'Facilitator', '', 'approved'],
+  ['12', 'closing',   27, 12, 'Farewell lunch at Dewan Makan', 'Last meal together before the closing ceremony.', 'Logistic Team', '', 'approved'],
+  ['07', 'closing',   27, 13, 'One last group photo', 'Dare to lead, dare to smile! 👑', 'Media Team', '', 'approved'],
+  // waiting in the admin queue for the demo
+  ['06', 'questrace', 26,  9, 'Checkpoint spotted: goats! 🐐', 'Not part of the race, but we had to stop.', 'Anonymous', '2', 'pending'],
+  ['15', 'questrace', 26, 11, 'QuestRace route check', 'Courtyard is clear, checkpoint 3 is through here.', 'Facilitator', '', 'pending']
+];
 function seedPosts(){
   if(!SEED_DEMO) return [];
-  var titles = {
-    arrival:['All aboard the UPTM bus!','Unloading at SK Kedaik','Setting up the hall'],
-    icebreak:['Crisis Identity chaos','Our group cheer!','First names, first friends'],
-    debate:['Order, order!','The opposition fights back','Speaker of the House'],
-    questrace:['Checkpoint 1 cleared','Team strategy huddle','Big smiles at the finish'],
-    integrity:['Integrity sharing session','Saying no to corruption','Our integrity pledge wall'],
-    groups:['Siput Menyanyi sing-along','LDK: Siapa Saya?','Caught in the act!'],
-    cultural:['Cultural Night rehearsal','Costumes ready!','Showtime on stage'],
-    closing:['Certificates for everyone','Top 3 group hampers','One last group photo']
-  };
-  var day = {arrival:24, icebreak:25, debate:25, questrace:26, integrity:26, groups:26, cultural:26, closing:27};
-  var posts = [];
-  var id = 1;
-  CATS.forEach(function(c){
-    titles[c.id].forEach(function(t, i){
-      posts.push({
-        id:'p'+id, title:t, category:c.id, description:'A moment from '+c.name+' at ProLead: Dare to Lead Camp.',
-        displayName: SAMPLE_NAMES[id%SAMPLE_NAMES.length], anonymous:false, group: String(id%GROUP_COUNT + 1),
-        image: placeholderImg(c.id, id),
-        date: campDate(day[c.id], 9 + i*3), status:'approved'
-      });
-      id++;
-    });
+  return DEMO.map(function(d, i){
+    return {
+      id:'demo'+(i+1), title:d[4], category:d[1], description:d[5],
+      displayName:d[6], anonymous:d[6]==='Anonymous', group:d[7],
+      image:'img/demo/'+d[0]+'.jpg', date:campDate(d[2], d[3]), status:d[8]
+    };
   });
-  // a few pending, for the admin demo
-  posts.push({id:'p'+id++, title:'Group 7 wins checkpoint 3', category:'questrace', description:'Fastest team at the rope challenge!',
-    displayName:'Anonymous', anonymous:true, group:'7', image: placeholderImg('questrace', 77), date: campDate(26, 11), status:'pending'});
-  posts.push({id:'p'+id++, title:'Supper after Cultural Night', category:'cultural', description:'Well earned.',
-    displayName:'Facilitator', anonymous:false, group:'', image: placeholderImg('cultural', 81), date: campDate(26, 22), status:'pending'});
-  return posts;
 }
 function campDate(d, h){ return new Date(2026, 10, d, h).toISOString(); }
 function fmtDate(iso){ var d = new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
@@ -74,7 +52,7 @@ function groupLabel(p){ return p.group ? 'Group '+p.group : ''; }
 
 /* ---------- state + persistence ---------- */
 // Cloud mode (Firebase) when js/firebase-config.js is filled in, otherwise a local demo in this browser.
-var STORE_KEY = 'prolead_posts_v2';
+var STORE_KEY = 'prolead_posts_v3';
 var posts = [];
 var isAdmin = false;
 var cloud = null;
