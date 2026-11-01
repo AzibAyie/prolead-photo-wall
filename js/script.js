@@ -51,6 +51,42 @@ function campDate(d, h){ return new Date(2026, 10, d, h).toISOString(); }
 function fmtDate(iso){ var d = new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 function groupLabel(p){ return p.group ? 'Group '+p.group : ''; }
 
+/* ---------- safety ---------- */
+// Never show this site inside someone else's page (stops "clickjacking" tricks).
+if(location.protocol === 'https:' && window.top !== window.self){
+  try{ window.top.location = window.location.href; }catch(e){ document.documentElement.innerHTML = ''; }
+}
+// Everything that comes from the database is treated as untrusted: anyone could try to write
+// a fake post straight to Firebase, so each post is checked and cleaned before it is shown.
+var SAFE_IMG = /^(data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+|img\/demo\/\d{2}\.jpg)$/;
+var BLANK_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/AL+3J8AAAAASUVORK5CYII=';
+function safeImg(src){ return typeof src === 'string' && SAFE_IMG.test(src) ? src : BLANK_IMG; }
+function text(v, max){ return typeof v === 'string' ? v.slice(0, max) : ''; }
+function count(v){ return typeof v === 'number' && isFinite(v) && v > 0 ? Math.floor(v) : 0; }
+function cleanPost(p){
+  if(!p || typeof p !== 'object') return null;
+  var r = p.reactions || {};
+  var status = ['pending','approved','rejected'].indexOf(p.status) !== -1 ? p.status : 'pending';
+  return {
+    id: String(p.id || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40),
+    title: text(p.title, 80) || 'Untitled', description: text(p.description, 280),
+    displayName: text(p.displayName, 40) || 'Anonymous', anonymous: p.anonymous === true,
+    category: CATS.some(function(c){ return c.id === p.category; }) ? p.category : CATS[0].id,
+    group: /^([1-9]|1[0-2])$/.test(p.group) ? p.group : '',
+    challenge: /^[a-z]{1,20}$/.test(p.challenge) ? p.challenge : '',
+    image: safeImg(p.image), date: isNaN(new Date(p.date)) ? new Date(0).toISOString() : p.date,
+    status: status, rejectReason: text(p.rejectReason, 200),
+    reactions: {heart:count(r.heart), laugh:count(r.laugh), fire:count(r.fire), crown:count(r.crown)}
+  };
+}
+function cleanPosts(list){ return (Array.isArray(list) ? list : []).map(cleanPost).filter(function(p){ return p && p.id; }); }
+
+// Kind words only: a small filter for obvious rude words (English + Malay). Admins still review everything.
+var BAD_WORDS = ['fuck','fck','shit','bitch','bastard','asshole','dick','pussy','porn','nude','nudes','sex','sexy','babi','bodoh','sial','celaka',
+  'pukimak','puki','lancau','kimak','pantat','bangsat','anjing','sundal','jalang','butoh','konek','haram jadah','bahlul','keparat'];
+var BAD_RE = new RegExp('(^|[^a-z])(' + BAD_WORDS.join('|') + ')([^a-z]|$)', 'i');
+function isUnkind(s){ return BAD_RE.test(String(s || '').replace(/[0@]/g, 'o').replace(/[1!]/g, 'i').replace(/3/g, 'e').replace(/\$/g, 's')); }
+
 /* ---------- state + persistence ---------- */
 // Cloud mode (Firebase) when js/firebase-config.js is filled in, otherwise a local demo in this browser.
 var STORE_KEY = 'prolead_posts_v4';
@@ -67,9 +103,9 @@ if(window.firebase && FB.apiKey){
 if(!cloud){
   try{
     var raw = localStorage.getItem(STORE_KEY);
-    posts = raw ? JSON.parse(raw) : seedPosts();
+    posts = cleanPosts(raw ? JSON.parse(raw) : seedPosts());
     if(!raw) localStorage.setItem(STORE_KEY, JSON.stringify(posts));
-  }catch(e){ posts = seedPosts(); }
+  }catch(e){ posts = cleanPosts(seedPosts()); }
   try{ isAdmin = sessionStorage.getItem('sharespace_admin') === '1'; }catch(e){}
 }
 function save(){ if(!cloud){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(posts)); }catch(e){} } }
@@ -80,6 +116,7 @@ var REACTS = [{k:'heart', e:'❤️'}, {k:'laugh', e:'😂'}, {k:'fire', e:'🔥
 function reactionsOf(p){ return p.reactions || {heart:0, laugh:0, fire:0, crown:0}; }
 function postsSig(list){ return list.map(function(p){ return p.id + ':' + p.status; }).sort().join('|'); }
 function applyPosts(next, initial){
+  next = cleanPosts(next);
   var prev = {};
   posts.forEach(function(p){ prev[p.id] = p; });
   var structural = postsSig(posts) !== postsSig(next);
@@ -123,24 +160,78 @@ function subscribePosts(){
   });
 }
 if(cloud){
+  // Sign-ins only last until the tab is closed (safer on shared computers), and every visitor gets an
+  // invisible anonymous account so the database can tell visitors apart and limit how fast they post.
+  cloud.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(function(){});
   cloud.auth.onAuthStateChanged(function(user){
-    isAdmin = !!user && (!FB.adminEmail || user.email === FB.adminEmail);
-    if(user && !isAdmin){ cloud.auth.signOut(); toast('That account is not an admin', '🚫'); }
+    if(!user){ cloud.auth.signInAnonymously().catch(function(e){ console.error(e); }); }
+    isAdmin = !!user && !user.isAnonymous && !!FB.adminEmail && user.email === FB.adminEmail;
+    if(user && !user.isAnonymous && !isAdmin){ cloud.auth.signOut(); toast('That account is not an admin', '🚫'); }
     subscribePosts();
+    subscribeReports();
     renderCurrent();
   });
 }
 
+// one upload every 30 seconds per visitor (the database enforces this too)
+var POST_COOLDOWN_MS = 30000;
+function cooldownLeft(){ return Math.max(0, (player.lastPostAt || 0) + POST_COOLDOWN_MS - Date.now()); }
+
 function createPost(p, full){
   if(!cloud){
     p.id = 'p' + Date.now(); p.image = full;
-    posts.unshift(p); save();
+    posts.unshift(cleanPost(p)); save();
     return Promise.resolve();
   }
+  var user = cloud.auth.currentUser;
+  if(!user) return Promise.reject(new Error('not signed in yet'));
+  p.uid = user.uid;
   var ref = cloud.db.collection('posts').doc();
   var batch = cloud.db.batch();
   batch.set(ref, p);
   batch.set(cloud.db.collection('images').doc(ref.id), {full: full});
+  batch.set(cloud.db.collection('limits').doc(user.uid), {lastPost: firebase.firestore.FieldValue.serverTimestamp()});
+  return batch.commit();
+}
+
+/* reports: anyone can flag a published photo; admins see the flags */
+var REPORT_REASONS = {inappropriate:'Inappropriate or unkind', privacy:'Shows someone who didn\'t agree', spam:'Spam or not from camp', other:'Something else'};
+var REPORTS_KEY = 'prolead_reports_v1';
+var reports = [];
+if(!cloud){ try{ reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]'); }catch(e){ reports = []; } }
+var unsubReports = null;
+function subscribeReports(){
+  if(unsubReports){ unsubReports(); unsubReports = null; }
+  if(!cloud || !isAdmin){ reports = cloud ? [] : reports; return; }
+  unsubReports = cloud.db.collection('reports').onSnapshot(function(snap){
+    var before = reports.length;
+    reports = snap.docs.map(function(d){ var r = d.data(); return {id:d.id, postId:text(r.postId, 40), reason:REPORT_REASONS[r.reason] ? r.reason : 'other'}; });
+    if(reports.length > before && before) toast('A photo was reported', '🚩');
+    if(currentView() === 'admin') renderAdmin();
+  }, function(err){ console.error(err); });
+}
+function reportsFor(id){ return reports.filter(function(r){ return r.postId === id; }); }
+function sendReport(p, reason){
+  player.reportedIds = player.reportedIds || [];
+  if(player.reportedIds.indexOf(p.id) !== -1) return Promise.resolve('dup');
+  player.reportedIds.push(p.id); savePlayer();
+  if(!cloud){
+    reports.push({id:'r' + Date.now(), postId:p.id, reason:reason});
+    try{ localStorage.setItem(REPORTS_KEY, JSON.stringify(reports)); }catch(e){}
+    return Promise.resolve();
+  }
+  var user = cloud.auth.currentUser;
+  return cloud.db.collection('reports').add({postId:p.id, reason:reason, uid:user ? user.uid : '', date:firebase.firestore.FieldValue.serverTimestamp()});
+}
+function clearReports(p){
+  var mine = reportsFor(p.id);
+  if(!cloud){
+    reports = reports.filter(function(r){ return r.postId !== p.id; });
+    try{ localStorage.setItem(REPORTS_KEY, JSON.stringify(reports)); }catch(e){}
+    return Promise.resolve();
+  }
+  var batch = cloud.db.batch();
+  mine.forEach(function(r){ batch.delete(cloud.db.collection('reports').doc(r.id)); });
   return batch.commit();
 }
 function updatePost(p, changes){
@@ -157,10 +248,10 @@ function deletePost(p){
 // cards use the small thumbnail; the full photo is fetched when opened
 var fullCache = {};
 function fullImage(p){
-  if(!cloud) return Promise.resolve(p.image);
+  if(!cloud) return Promise.resolve(safeImg(p.image));
   if(fullCache[p.id]) return Promise.resolve(fullCache[p.id]);
   return cloud.db.collection('images').doc(p.id).get().then(function(d){
-    var src = d.exists ? d.data().full : p.image;
+    var src = safeImg(d.exists ? d.data().full : p.image);
     fullCache[p.id] = src;
     return src;
   }).catch(function(){ return p.image; });
@@ -248,15 +339,15 @@ function chipHTML(c, active){
 function cardHTML(p){
   var c = cat(p.category);
   var name = p.anonymous ? 'Anonymous' : p.displayName;
-  return '<article class="card" data-id="'+p.id+'" tabindex="0" role="button" aria-label="Open post: '+escAttr(p.title)+'">'+
-    '<div class="card-img"><img src="'+p.image+'" alt="'+escAttr(p.title)+'" loading="lazy"></div>'+
+  return '<article class="card" data-id="'+escAttr(p.id)+'" tabindex="0" role="button" aria-label="Open post: '+escAttr(p.title)+'">'+
+    '<div class="card-img"><img src="'+escAttr(safeImg(p.image))+'" alt="'+escAttr(p.title)+'" loading="lazy"></div>'+
     '<div class="card-body">'+
       '<div class="pill-row"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
       (p.challenge && challenge(p.challenge) ? '<span class="cat-pill ch-pill" title="'+escAttr(challenge(p.challenge).t)+'">🎯 '+challenge(p.challenge).e+'</span>' : '')+'</div>'+
       '<div class="card-title">'+esc(p.title)+'</div>'+
       '<div class="card-meta"><span>'+esc(name)+(p.group?' · G'+esc(p.group):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
       reactRowHTML(p)+
-      (p.status === 'approved' ? '<div class="react-sum" data-sum-id="'+p.id+'">'+reactSummary(p)+'</div>' : '')+
+      (p.status === 'approved' ? '<div class="react-sum" data-sum-id="'+escAttr(p.id)+'">'+reactSummary(p)+'</div>' : '')+
     '</div></article>';
 }
 function esc(s){ var d=document.createElement('div'); d.textContent = s==null?'':s; return d.innerHTML; }
@@ -329,7 +420,7 @@ function renderExploreGrid(){
 function reactRowHTML(p, big){
   if(p.status !== 'approved') return '';
   var r = reactionsOf(p), mine = (player.reacted && player.reacted[p.id]) || [];
-  return '<div class="react-row'+(big?' big':'')+'" data-react-id="'+p.id+'">'+REACTS.map(function(x){
+  return '<div class="react-row'+(big?' big':'')+'" data-react-id="'+escAttr(p.id)+'">'+REACTS.map(function(x){
     return '<button type="button" class="react-btn'+(mine.indexOf(x.k)!==-1?' on':'')+'" data-r="'+x.k+'" aria-label="React '+x.e+'">'+x.e+' <b>'+(r[x.k]||0)+'</b></button>';
   }).join('')+'</div>';
 }
@@ -435,7 +526,7 @@ function renderChallengeBox(el){
     return '<div class="challenge-card'+(mine?' done':'')+'">'+
       '<div class="ch-emoji">'+c.e+'</div>'+
       '<div class="ch-title">'+c.t+'</div>'+
-      '<div class="ch-thumbs">'+shots.slice(0,4).map(function(p){ return '<img src="'+p.image+'" alt="" data-open="'+p.id+'">'; }).join('')+
+      '<div class="ch-thumbs">'+shots.slice(0,4).map(function(p){ return '<img src="'+escAttr(safeImg(p.image))+'" alt="" data-open="'+escAttr(p.id)+'">'; }).join('')+
         '<span>'+shots.length+' photo'+(shots.length===1?'':'s')+'</span></div>'+
       (mine ? '<div class="ch-done">✓ You did it!</div>'
             : '<button type="button" class="btn btn-accent btn-sm" data-take="'+c.id+'">Take it on · +'+CHALLENGE_XP+' XP</button>')+
@@ -591,7 +682,25 @@ function openPostModal(id){
     '<h3 style="margin:10px 0 6px">'+esc(p.title)+'</h3>'+
     '<p style="color:var(--muted)">'+esc(p.description||'No description added.')+'</p>'+
     '<div class="card-meta" style="margin-top:14px"><span>👤 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
-    reactRowHTML(p, true);
+    reactRowHTML(p, true)+
+    (p.status === 'approved' ? '<div class="report-area" id="report-area"><button type="button" class="report-link" id="report-btn">Report this photo</button></div>' : '');
+  var reportBtn = document.getElementById('report-btn');
+  if(reportBtn) reportBtn.onclick = function(){
+    var area = document.getElementById('report-area');
+    if(player.reportedIds && player.reportedIds.indexOf(p.id) !== -1){ area.innerHTML = '<span class="hint">You already reported this photo. Thanks!</span>'; return; }
+    area.innerHTML = '<div class="hint" style="margin:0 0 8px">What\'s wrong with this photo?</div><div class="report-choices">'+
+      Object.keys(REPORT_REASONS).map(function(k){ return '<button type="button" class="chip" data-reason="'+k+'">'+REPORT_REASONS[k]+'</button>'; }).join('')+'</div>';
+    area.querySelectorAll('[data-reason]').forEach(function(b){
+      b.onclick = function(){
+        area.innerHTML = '<span class="hint">Sending…</span>';
+        sendReport(p, b.dataset.reason).then(function(){
+          area.innerHTML = '<span class="hint">Thanks for telling us. The admins will take a look. 💛</span>';
+        }, function(){
+          area.innerHTML = '<span class="hint">Couldn\'t send the report. Please try again later.</span>';
+        });
+      };
+    });
+  };
   document.getElementById('post-scrim').classList.add('show');
 }
 document.getElementById('post-close').addEventListener('click', function(){ document.getElementById('post-scrim').classList.remove('show'); });
@@ -1023,11 +1132,8 @@ dropzone.addEventListener('click', function(){ fileInput.click(); });
 dropzone.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); fileInput.click(); } });
 dropzone.addEventListener('mouseenter', function(){ if(!uploadedImage && mochi.dataset.mood==='idle'){ setMood('hungry', 1500); } });
 fileInput.addEventListener('change', function(){ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
-// phones: open the camera directly, or the gallery
-var cameraInput = document.getElementById('camera-input');
-cameraInput.addEventListener('change', function(){ if(cameraInput.files[0]) handleFile(cameraInput.files[0]); cameraInput.value = ''; });
-document.getElementById('btn-camera').addEventListener('click', function(e){ e.stopPropagation(); cameraInput.click(); });
-document.getElementById('btn-gallery').addEventListener('click', function(e){ e.stopPropagation(); fileInput.click(); });
+// phones: one button; the phone itself offers "Take photo" or "Photo library"
+document.getElementById('btn-upload').addEventListener('click', function(e){ e.stopPropagation(); fileInput.click(); });
 
 // drop a file anywhere on the quest page
 var dragDepth = 0;
@@ -1064,7 +1170,9 @@ document.addEventListener('paste', function(e){
 });
 
 function handleFile(file){
-  if(!file || !file.type || file.type.indexOf('image/') !== 0){
+  // real photo formats only (no SVG "images", which can carry code); every photo is redrawn as a
+  // fresh JPEG before upload, which also strips hidden data like GPS location
+  if(!file || ['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif'].indexOf(file.type) === -1){
     SFX.nope(); setMood('sad', 1800); bounce('shake');
     say('Blegh! That\'s not a photo. Images only, please!');
     return;
@@ -1306,6 +1414,16 @@ document.getElementById('submit-form').addEventListener('submit', function(e){
     if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
+  if(isUnkind(titleInput.value) || isUnkind(descInput.value) || isUnkind(nameInput.value)){
+    SFX.nope(); setMood('sad', 2200); bounce('shake');
+    say('Let\'s keep it kind 💛 Please change some words, then try again.');
+    return;
+  }
+  if(cooldownLeft() > 0){
+    SFX.nope(); setMood('think', 1800);
+    say('Whoa, speedy! Wait ' + Math.ceil(cooldownLeft() / 1000) + ' seconds before the next photo.');
+    return;
+  }
 
   launching = true;
   submitBtn.textContent = '✨ Mochi is delivering…';
@@ -1342,6 +1460,7 @@ function finishQuest(stickerCount){
   var oldLevel = levelOf(player.xp);
   player.xp += earned;
   player.shares = (player.shares || 0) + 1;
+  player.lastPostAt = Date.now();
   if(challengeSelect.value){
     player.challenges = player.challenges || [];
     if(player.challenges.indexOf(challengeSelect.value) === -1) player.challenges.push(challengeSelect.value);
@@ -1504,20 +1623,26 @@ function renderAdmin(){
     t.onclick = function(){ adminTab = t.dataset.status; renderAdmin(); };
   });
 
-  var list = posts.filter(function(p){ return p.status===adminTab; })
+  var reportedCount = posts.filter(function(p){ return reportsFor(p.id).length; }).length;
+  var rtab = document.querySelector('#admin-tabs .tab[data-status="reported"]');
+  rtab.textContent = 'Reported' + (reportedCount ? ' (' + reportedCount + ')' : '');
+  rtab.classList.toggle('alert', reportedCount > 0);
+
+  var list = posts.filter(function(p){ return adminTab === 'reported' ? reportsFor(p.id).length > 0 : p.status === adminTab; })
     .sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
   var listEl = document.getElementById('admin-list');
   if(!list.length){
-    listEl.innerHTML = '<div class="empty"><b>Nothing here</b><div style="margin-top:4px">No '+adminTab+' submissions right now.</div></div>';
+    listEl.innerHTML = '<div class="empty"><b>Nothing here</b><div style="margin-top:4px">No '+adminTab+' photos right now.</div></div>';
     return;
   }
   var pillStyle = {pending:'background:#FBEEDB;color:var(--warn)', approved:'background:var(--green-tint);color:var(--good)', rejected:'background:#FAE4E4;color:var(--bad)'};
   listEl.innerHTML = list.map(function(p){
     var c = cat(p.category);
-    return '<div class="admin-row" data-id="'+p.id+'">'+
-      '<img class="admin-thumb" src="'+p.image+'" alt="">'+
+    return '<div class="admin-row" data-id="'+escAttr(p.id)+'">'+
+      '<img class="admin-thumb" src="'+escAttr(safeImg(p.image))+'" alt="">'+
       '<div class="admin-info"><b>'+esc(p.title)+'</b>'+
       '<div class="admin-meta"><span style="color:'+c.color+'">'+c.name+'</span><span>'+esc(p.anonymous?'Anonymous':p.displayName)+'</span><span>'+fmtDate(p.date)+'</span></div></div>'+
+      (reportsFor(p.id).length ? '<span class="status-pill report-pill">🚩 '+reportsFor(p.id).length+'</span>' : '')+
       '<span class="status-pill" style="'+pillStyle[p.status]+'">'+p.status.charAt(0).toUpperCase()+p.status.slice(1)+'</span>'+
     '</div>';
   }).join('');
@@ -1546,7 +1671,15 @@ function openReviewModal(id){
   } else if(p.rejectReason){
     actionsHTML = '<div class="hint" style="margin-top:14px; background:var(--bg); padding:10px 14px; border-radius:12px"><b style="color:var(--bad)">Rejection note:</b> '+esc(p.rejectReason)+'</div>';
   }
-  actionsHTML += '<button class="btn btn-ghost btn-sm" style="margin-top:14px" id="rev-delete">🗑️ Delete forever</button>';
+  var flags = reportsFor(p.id);
+  if(flags.length){
+    actionsHTML = '<div class="report-box"><b>🚩 Reported '+flags.length+' time'+(flags.length>1?'s':'')+'</b><ul>'+
+      flags.map(function(r){ return '<li>'+esc(REPORT_REASONS[r.reason] || 'Something else')+'</li>'; }).join('')+'</ul></div>' + actionsHTML;
+  }
+  actionsHTML += '<div class="rev-more">'+
+    (p.status === 'approved' ? '<button class="btn btn-accent btn-sm" id="rev-hide">Hide photo</button>' : '')+
+    (flags.length ? '<button class="btn btn-ghost btn-sm" id="rev-dismiss">Dismiss reports</button>' : '')+
+    '<button class="btn btn-ghost btn-sm" id="rev-delete">Delete forever</button></div>';
   document.getElementById('review-modal-body').innerHTML =
     '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
     '<span class="status-pill" style="margin-left:8px; '+({pending:'background:#FBEEDB;color:var(--warn)',approved:'background:var(--green-tint);color:var(--good)',rejected:'background:#FAE4E4;color:var(--bad)'}[p.status])+'">'+p.status+'</span>'+
@@ -1584,11 +1717,22 @@ function openReviewModal(id){
       });
     };
   }
+  if(document.getElementById('rev-hide')) document.getElementById('rev-hide').onclick = function(){
+    showConfirm({
+      icon:'🙈', title:'Hide this photo?', message:'"'+safeTitle+'" will be taken off the site right away. You can still delete it later.',
+      okLabel:'Hide', danger:true, needsReason:true, onConfirm:function(reason){
+        updatePost(p, {status:'rejected', rejectReason: reason || 'Hidden by admin.'}).then(done('Photo hidden', '🙈'), failed);
+      }
+    });
+  };
+  if(document.getElementById('rev-dismiss')) document.getElementById('rev-dismiss').onclick = function(){
+    clearReports(p).then(done('Reports dismissed', '👍'), failed);
+  };
   document.getElementById('rev-delete').onclick = function(){
     showConfirm({
       icon:'🗑️', title:'Delete this photo forever?', message:'"'+safeTitle+'" and its image will be permanently removed. This can\'t be undone.',
       okLabel:'Delete', danger:true, onConfirm:function(){
-        deletePost(p).then(done('Photo deleted', '🗑️'), failed);
+        deletePost(p).then(function(){ return clearReports(p); }).then(done('Photo deleted', '🗑️'), failed);
       }
     });
   };

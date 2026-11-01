@@ -2,37 +2,60 @@ rules_version = '2';
 
 // Paste this into Firebase console → Firestore Database → Rules, and replace
 // ADMIN_EMAIL_HERE with the admin account's email (same as adminEmail in js/firebase-config.js).
+//
+// What these rules protect against:
+//  - nobody but the admin can approve, hide, edit or delete photos
+//  - visitors only ever see APPROVED photos; pending/rejected ones stay private
+//  - every new post is checked field by field (no hidden code, no fake "photos", no oversized data)
+//  - each visitor can post at most once every 30 seconds
+//  - reactions can only go up or down by one, and only on approved photos
+//  - reports can be sent by anyone but only read by the admin
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // the admin must use their email + password account (anonymous visitors never count)
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'ADMIN_EMAIL_HERE';
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'password'
+        && request.auth.token.email == 'ADMIN_EMAIL_HERE';
     }
 
     function validNewPost(d) {
-      return d.keys().hasOnly(['title','category','description','displayName','anonymous','group','challenge','reactions','image','date','status'])
+      return d.keys().hasOnly(['title','category','description','displayName','anonymous','group','challenge','reactions','image','date','status','uid'])
+        && d.uid == request.auth.uid
         && d.status == 'pending'
-        && d.reactions == {'heart': 0, 'laugh': 0, 'fire': 0, 'crown': 0}
-        && d.challenge is string && d.challenge.size() <= 20
         && d.title is string && d.title.size() > 0 && d.title.size() <= 80
-        && d.category is string && d.category.size() <= 30
+        && d.category in ['arrival','icebreak','debate','questrace','integrity','groups','cultural','closing']
         && d.description is string && d.description.size() <= 280
-        && d.displayName is string && d.displayName.size() <= 40
+        && d.displayName is string && d.displayName.size() > 0 && d.displayName.size() <= 40
         && d.anonymous is bool
-        && d.group is string && d.group.size() <= 2
-        && d.date is string && d.date.size() <= 40
-        && d.image is string && d.image.size() < 160000;
+        && d.group is string && d.group.matches('^([1-9]|1[0-2])?$')
+        && d.challenge is string && d.challenge.matches('^[a-z]{0,20}$')
+        && d.reactions == {'heart': 0, 'laugh': 0, 'fire': 0, 'crown': 0}
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z$')
+        && d.image is string && d.image.size() < 160000
+        && d.image.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$');
+    }
+
+    // the post must be written together with this visitor's rate-limit stamp (see /limits)
+    function stampedNow() {
+      return getAfter(/databases/$(database)/documents/limits/$(request.auth.uid)).data.lastPost == request.time;
     }
 
     function step(a, b) {
       return b == a || b == a + 1 || (b == a - 1 && b >= 0);
     }
 
-    // anyone may add or remove ONE emoji reaction on an approved photo, nothing else
+    // add or remove ONE emoji reaction on an approved photo, nothing else
     function validReaction() {
       let before = resource.data.reactions;
       let after = request.resource.data.reactions;
-      return resource.data.status == 'approved'
+      return signedIn()
+        && resource.data.status == 'approved'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
         && after.keys().hasOnly(['heart','laugh','fire','crown'])
         && after.keys().hasAll(['heart','laugh','fire','crown'])
@@ -44,18 +67,49 @@ service cloud.firestore {
     // photo info + small thumbnail
     match /posts/{id} {
       allow read: if resource.data.status == 'approved' || isAdmin();
-      allow create: if validNewPost(request.resource.data);
+      allow create: if signedIn() && validNewPost(request.resource.data) && stampedNow();
       allow update: if isAdmin() || validReaction();
       allow delete: if isAdmin();
     }
 
-    // full-size photo, created together with its post
+    // full-size photo, created together with its post by the same visitor
     match /images/{id} {
       allow read: if isAdmin() || get(/databases/$(database)/documents/posts/$(id)).data.status == 'approved';
-      allow create: if request.resource.data.keys().hasOnly(['full'])
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['full'])
         && request.resource.data.full is string && request.resource.data.full.size() < 950000
-        && getAfter(/databases/$(database)/documents/posts/$(id)).data.status == 'pending';
+        && request.resource.data.full.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+        && getAfter(/databases/$(database)/documents/posts/$(id)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/posts/$(id)).data.uid == request.auth.uid;
       allow delete: if isAdmin();
+    }
+
+    // one upload every 30 seconds per visitor
+    match /limits/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lastPost'])
+        && request.resource.data.lastPost == request.time;
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lastPost'])
+        && request.resource.data.lastPost == request.time
+        && request.time > resource.data.lastPost + duration.value(30, 's');
+    }
+
+    // "Report this photo": anyone signed in can send one, only the admin can read or clear them
+    match /reports/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['postId','reason','uid','date'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.postId is string && request.resource.data.postId.size() <= 40
+        && request.resource.data.reason in ['inappropriate','privacy','spam','other']
+        && request.resource.data.date == request.time;
+      allow read, delete: if isAdmin();
+    }
+
+    // everything else is closed
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

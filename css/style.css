@@ -948,3 +948,23 @@ body.show-mode .music-btn:hover{opacity:1}
   .show-controls{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width:820px){ .show-controls, :root .show-controls{top:calc(54px + env(safe-area-inset-top,0px)); bottom:auto; left:12px; transform:none} }
+
+/* ===== one upload button ===== */
+.dz-phone{grid-template-columns:1fr!important}
+.dz-phone .btn{width:100%; padding:15px 12px; font-size:1.05rem}
+
+/* ===== reporting ===== */
+.report-area{margin-top:16px; padding-top:12px; border-top:2px dashed var(--line)}
+.report-link{background:none; border:none; padding:6px 0; color:var(--muted); font-weight:800; font-size:.82rem; cursor:pointer; text-decoration:underline; font-family:var(--font-body)}
+.report-link:hover{color:#C2306E}
+.report-choices{display:flex; flex-wrap:wrap; gap:8px}
+.report-choices .chip{background:#fff; color:var(--outline); font-size:.8rem}
+.report-pill{background:#FFE1E1; color:#B42318; margin-right:6px}
+.tab.alert{border-color:#B42318; color:#B42318}
+.tab.alert.active{background:#FFE1E1}
+.report-box{margin-top:14px; background:#FFF1F1; border:2px solid #F3B4B4; border-radius:14px; padding:10px 14px; font-size:.85rem}
+.report-box b{color:#B42318}
+.report-box ul{margin:6px 0 0 18px; padding:0}
+.rev-more{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+.dz-phone .btn, :root .dz-phone .btn{display:flex!important; align-items:center; justify-content:center!important; gap:10px}
+.dropzone .dz-phone .btn .ico{margin:0}
