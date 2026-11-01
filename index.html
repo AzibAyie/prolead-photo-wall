@@ -25,7 +25,9 @@
     <div class="navlinks" id="navlinks">
       <a href="#home" class="navlink" data-route="home">Home</a>
       <a href="#explore" class="navlink" data-route="explore">Explore</a>
+      <a href="#groups" class="navlink" data-route="groups">Groups</a>
       <a href="#submit" class="navlink" data-route="submit">Share</a>
+      <a href="#show" class="navlink show-link" data-route="show">📺 Big Screen</a>
       <a href="#admin" class="navlink admin" data-route="admin">Admin</a>
     </div>
   </div>
@@ -51,6 +53,7 @@
           <div class="hero-actions">
             <a href="#explore" class="btn btn-primary">See Camp Photos</a>
             <a href="#submit" class="btn btn-accent">🎮 Play Photo Quest</a>
+            <a href="#show" class="btn btn-ghost">📺 Big Screen</a>
           </div>
         </div>
         <div class="hero-art floaty" style="--r:-2deg">
@@ -84,6 +87,60 @@
         <a href="#explore" class="btn btn-ghost btn-sm">See all</a>
       </div>
       <div class="grid" id="home-recent"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div><span class="eyebrow">Daily missions</span><h2 style="margin-top:6px">Mochi's Photo Challenges 🎯</h2></div>
+      </div>
+      <div id="challenge-box"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div><span class="eyebrow">Live</span><h2 style="margin-top:6px">Group Race 🏁</h2></div>
+        <a href="#groups" class="btn btn-ghost btn-sm">Full leaderboard</a>
+      </div>
+      <div class="board" id="board-mini"></div>
+    </div>
+  </section>
+
+  <!-- GROUPS -->
+  <section class="view" id="view-groups" hidden>
+    <div class="section">
+      <span class="eyebrow">Live leaderboard</span>
+      <h2 style="margin-top:6px">Group Race 🏁</h2>
+      <p class="hint" style="margin-bottom:18px">Tag your group when you share a photo! Every approved photo earns <b>10 pts</b>, every emoji reaction on it <b>1 pt</b>, and completing a photo challenge <b>+5 pts</b>. Top 3 groups take home the hampers at closing. 🎁</p>
+      <div class="board" id="board-full"></div>
+    </div>
+  </section>
+
+  <!-- BIG SCREEN -->
+  <section class="view" id="view-show" hidden>
+    <div class="show-stage" id="show-stage">
+      <div class="show-slide" id="show-slide-0"><div class="show-bg"></div><img alt=""></div>
+      <div class="show-slide" id="show-slide-1"><div class="show-bg"></div><img alt=""></div>
+      <div class="show-top">
+        <div class="show-brand">👑 ProLead: Dare to Lead <span>● LIVE photo wall</span></div>
+        <div class="show-board" id="show-board"></div>
+      </div>
+      <div class="show-caption" id="show-caption"></div>
+      <div class="show-qr"><div id="show-qr"></div><b>Scan to share<br>your photo! 📸</b></div>
+      <div class="show-new" id="show-new">📸 NEW PHOTO!</div>
+      <div class="show-react-layer" id="show-react-layer"></div>
+      <div class="show-empty" id="show-empty" hidden>
+        <div style="font-size:4rem">🍡</div>
+        <b>No photos yet!</b>
+        <span>Scan the QR code and be the first to share.</span>
+      </div>
+      <div class="show-controls">
+        <button type="button" id="show-prev" title="Previous (←)">⏮️</button>
+        <button type="button" id="show-play" title="Pause / play (Space)">⏸️</button>
+        <button type="button" id="show-next" title="Next (→)">⏭️</button>
+        <button type="button" id="show-full" title="Fullscreen (F)">⛶</button>
+        <button type="button" id="show-exit" title="Exit (Esc)">✕</button>
+      </div>
+      <div class="show-progress"><i id="show-progress"></i></div>
     </div>
   </section>
 
@@ -240,6 +297,10 @@
                 <label for="f-group">Tag a group <span class="hint" style="display:inline">(+10 XP)</span></label>
                 <select id="f-group"><option value="">No group / whole camp</option></select>
               </div>
+              <div class="field">
+                <label for="f-challenge">Photo challenge <span class="hint" style="display:inline">(+20 XP)</span></label>
+                <select id="f-challenge"><option value="">No challenge</option></select>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary launch locked" id="submit-btn">🔒 4 missions left</button>
@@ -331,6 +392,7 @@
 </div>
 
 <div class="toast-stack" id="toast-stack"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>

@@ -18,23 +18,23 @@ var GROUP_COUNT = 12;
 /* ---------- demo posts (img/demo) — set to false before the real camp ---------- */
 var SEED_DEMO = true;
 var DEMO = [
-  // [file, moment, day, hour, title, description, credit, group, status]
-  ['09', 'arrival',   24, 10, 'On the road to Muadzam Shah 🚗', 'Snacks packed, playlist ready. Let\'s go!', 'Facilitator', '', 'approved'],
-  ['08', 'arrival',   24, 15, 'Hello, ASPURI hostel!', 'Our home for the next four days.', 'Media Team', '', 'approved'],
-  ['11', 'arrival',   24, 16, 'Facilitators\' rest room is ready', 'Beds made, fans on. Rest well, team!', 'Logistic Team', '', 'approved'],
-  ['13', 'arrival',   24, 17, 'Room check done ✅', 'Clean, comfy and cute bedsheets.', 'Logistic Team', '', 'approved'],
-  ['02', 'icebreak',  25, 17, 'Group cheer energy!', 'Loudest group wins, and we were LOUD.', 'Media Team', '3', 'approved'],
-  ['14', 'debate',    25, 21, 'The debate chamber is set', 'Order, order! Parliamentary Debate starts tonight.', 'Activity Team', '', 'approved'],
-  ['03', 'questrace', 26,  8, 'Team photo before QuestRace', 'Peace signs up before checkpoint 1!', 'Facilitator', '5', 'approved'],
-  ['10', 'integrity', 26, 10, 'Hall ready for the integrity session', 'Mats down, ready to share and reflect.', 'Activity Team', '', 'approved'],
-  ['04', 'groups',    26, 15, 'Facilitator squad 😎', 'Siput Menyanyi crew, reporting for duty.', 'Media Team', '', 'approved'],
-  ['01', 'groups',    26, 16, 'LDK: Siapa Saya? Thumbs up!', 'Answering the big question with a big thumbs up.', 'Anonymous', '8', 'approved'],
-  ['05', 'cultural',  26, 22, 'Supper after Cultural Night', 'Well earned after that performance!', 'Facilitator', '', 'approved'],
-  ['12', 'closing',   27, 12, 'Farewell lunch at Dewan Makan', 'Last meal together before the closing ceremony.', 'Logistic Team', '', 'approved'],
-  ['07', 'closing',   27, 13, 'One last group photo', 'Dare to lead, dare to smile! 👑', 'Media Team', '', 'approved'],
+  // [file, moment, day, hour, title, description, credit, group, status, challenge, reactions ❤️😂🔥👑]
+  ['09', 'arrival',   24, 10, 'On the road to Muadzam Shah 🚗', 'Snacks packed, playlist ready. Let\'s go!', 'Facilitator', '1', 'approved', 'roadtrip', [6,4,2,1]],
+  ['08', 'arrival',   24, 15, 'Hello, ASPURI hostel!', 'Our home for the next four days.', 'Media Team', '', 'approved', 'newhome', [5,0,1,0]],
+  ['11', 'arrival',   24, 16, 'Facilitators\' rest room is ready', 'Beds made, fans on. Rest well, team!', 'Logistic Team', '', 'approved', '', [3,1,0,0]],
+  ['13', 'arrival',   24, 17, 'Room check done ✅', 'Clean, comfy and cute bedsheets.', 'Logistic Team', '6', 'approved', '', [2,2,0,0]],
+  ['02', 'icebreak',  25, 17, 'Group cheer energy!', 'Loudest group wins, and we were LOUD.', 'Media Team', '3', 'approved', 'cheer', [12,3,9,4]],
+  ['14', 'debate',    25, 21, 'The debate chamber is set', 'Order, order! Parliamentary Debate starts tonight.', 'Activity Team', '', 'approved', '', [4,0,2,1]],
+  ['03', 'questrace', 26,  8, 'Team photo before QuestRace', 'Peace signs up before checkpoint 1!', 'Facilitator', '5', 'approved', 'checkpoint', [9,2,6,3]],
+  ['10', 'integrity', 26, 10, 'Hall ready for the integrity session', 'Mats down, ready to share and reflect.', 'Activity Team', '', 'approved', '', [3,0,0,1]],
+  ['04', 'groups',    26, 15, 'Facilitator squad 😎', 'Siput Menyanyi crew, reporting for duty.', 'Media Team', '7', 'approved', 'newfriend', [8,5,4,2]],
+  ['01', 'groups',    26, 16, 'LDK: Siapa Saya? Thumbs up!', 'Answering the big question with a big thumbs up.', 'Anonymous', '8', 'approved', 'firstsmile', [5,6,1,0]],
+  ['05', 'cultural',  26, 22, 'Supper after Cultural Night', 'Well earned after that performance! Spot the yellow table.', 'Facilitator', '3', 'approved', 'yellow', [7,4,3,1]],
+  ['12', 'closing',   27, 12, 'Farewell lunch at Dewan Makan', 'Last meal together before the closing ceremony.', 'Logistic Team', '', 'approved', '', [4,0,1,0]],
+  ['07', 'closing',   27, 13, 'One last group photo', 'Dare to lead, dare to smile! 👑', 'Media Team', '5', 'approved', 'goodbye', [15,3,7,6]],
   // waiting in the admin queue for the demo
-  ['06', 'questrace', 26,  9, 'Checkpoint spotted: goats! 🐐', 'Not part of the race, but we had to stop.', 'Anonymous', '2', 'pending'],
-  ['15', 'questrace', 26, 11, 'QuestRace route check', 'Courtyard is clear, checkpoint 3 is through here.', 'Facilitator', '', 'pending']
+  ['06', 'questrace', 26,  9, 'Checkpoint spotted: goats! 🐐', 'Not part of the race, but we had to stop.', 'Anonymous', '2', 'pending', '', [0,0,0,0]],
+  ['15', 'questrace', 26, 11, 'QuestRace route check', 'Courtyard is clear, checkpoint 3 is through here.', 'Facilitator', '9', 'pending', 'checkpoint', [0,0,0,0]]
 ];
 function seedPosts(){
   if(!SEED_DEMO) return [];
@@ -42,7 +42,8 @@ function seedPosts(){
     return {
       id:'demo'+(i+1), title:d[4], category:d[1], description:d[5],
       displayName:d[6], anonymous:d[6]==='Anonymous', group:d[7],
-      image:'img/demo/'+d[0]+'.jpg', date:campDate(d[2], d[3]), status:d[8]
+      image:'img/demo/'+d[0]+'.jpg', date:campDate(d[2], d[3]), status:d[8], challenge:d[9],
+      reactions:{heart:d[10][0], laugh:d[10][1], fire:d[10][2], crown:d[10][3]}
     };
   });
 }
@@ -52,7 +53,7 @@ function groupLabel(p){ return p.group ? 'Group '+p.group : ''; }
 
 /* ---------- state + persistence ---------- */
 // Cloud mode (Firebase) when js/firebase-config.js is filled in, otherwise a local demo in this browser.
-var STORE_KEY = 'prolead_posts_v3';
+var STORE_KEY = 'prolead_posts_v4';
 var posts = [];
 var isAdmin = false;
 var cloud = null;
@@ -73,24 +74,49 @@ if(!cloud){
 }
 function save(){ if(!cloud){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(posts)); }catch(e){} } }
 
+// Swap in a fresh copy of the posts and work out what changed, so the page can react live:
+// newly approved photos pop up on the Big Screen, and new reactions float across it.
+var REACTS = [{k:'heart', e:'❤️'}, {k:'laugh', e:'😂'}, {k:'fire', e:'🔥'}, {k:'crown', e:'👑'}];
+function reactionsOf(p){ return p.reactions || {heart:0, laugh:0, fire:0, crown:0}; }
+function postsSig(list){ return list.map(function(p){ return p.id + ':' + p.status; }).sort().join('|'); }
+function applyPosts(next, initial){
+  var prev = {};
+  posts.forEach(function(p){ prev[p.id] = p; });
+  var structural = postsSig(posts) !== postsSig(next);
+  posts = next;
+  if(initial){ renderCurrent(); return; }
+  var fresh = [], bursts = [];
+  posts.forEach(function(p){
+    var old = prev[p.id];
+    if(p.status === 'approved' && (!old || old.status !== 'approved')) fresh.push(p);
+    if(!old && p.status === 'pending' && isAdmin) toast('New photo to review: ' + p.title, '🔔');
+    if(old && p.status === 'approved'){
+      var a = reactionsOf(old), b = reactionsOf(p);
+      REACTS.forEach(function(r){ if((b[r.k]||0) > (a[r.k]||0)) bursts.push({post:p, emoji:r.e, n:b[r.k]-a[r.k]}); });
+    }
+  });
+  if(structural) renderCurrent(); else patchReactions();
+  fresh.forEach(function(p){
+    if(showActive()) showNewPhoto(p); else if(!isAdmin) toast('New photo: ' + p.title, '📸');
+  });
+  if(showActive()) bursts.forEach(function(b){ showReactionBurst(b.emoji, b.n); });
+}
+// demo mode: keep tabs in sync (approve in one tab, watch it pop up on the Big Screen in another)
+window.addEventListener('storage', function(e){
+  if(cloud || e.key !== STORE_KEY || !e.newValue) return;
+  try{ applyPosts(JSON.parse(e.newValue), false); }catch(err){}
+});
+
 // live updates: public sees approved posts, the signed-in admin sees everything
-var unsubPosts = null, knownIds = null;
+var unsubPosts = null;
 function subscribePosts(){
   if(!cloud) return;
   if(unsubPosts) unsubPosts();
-  knownIds = null;
+  var first = true;
   var col = cloud.db.collection('posts');
   unsubPosts = (isAdmin ? col : col.where('status', '==', 'approved')).onSnapshot(function(snap){
-    posts = snap.docs.map(function(d){ var p = d.data(); p.id = d.id; return p; });
-    if(knownIds){
-      posts.forEach(function(p){
-        if(!knownIds[p.id] && p.status === 'approved' && !isAdmin) toast('New photo: ' + p.title, '📸');
-        if(!knownIds[p.id] && p.status === 'pending' && isAdmin) toast('New photo to review: ' + p.title, '🔔');
-      });
-    }
-    knownIds = {};
-    posts.forEach(function(p){ knownIds[p.id] = true; });
-    renderCurrent();
+    applyPosts(snap.docs.map(function(d){ var p = d.data(); p.id = d.id; return p; }), first);
+    first = false;
   }, function(err){
     console.error(err);
     toast('Could not load photos. Check your connection.', '⚠️');
@@ -178,7 +204,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','submit','admin'];
+var VIEWS = ['home','explore','groups','submit','admin','show'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
@@ -191,7 +217,8 @@ function route(){
   document.querySelectorAll('.navlink').forEach(function(a){
     a.classList.toggle('active', a.dataset.route === hash);
   });
-  if(hash === 'submit') renderSubmitCats();
+  if(hash === 'show') startShow(); else stopShow();
+  if(hash === 'submit'){ renderSubmitCats(); applyPendingChallenge(); }
   renderCurrent();
   window.scrollTo(0,0);
 }
@@ -200,7 +227,14 @@ function renderCurrent(){
   var hash = currentView();
   if(hash === 'home') renderHome();
   if(hash === 'explore') renderExplore();
+  if(hash === 'groups') renderBoard(document.getElementById('board-full'));
   if(hash === 'admin') renderAdmin();
+  if(hash === 'show'){
+    show.list = showList();
+    document.getElementById('show-empty').hidden = show.list.length > 0;
+    if(show.list.length && show.list.indexOf(showCurrent()) === -1) showSlide(0);
+    renderShowBoard();
+  }
 }
 window.addEventListener('hashchange', route);
 
@@ -218,9 +252,11 @@ function cardHTML(p){
   return '<article class="card" data-id="'+p.id+'" tabindex="0" role="button" aria-label="Open post: '+escAttr(p.title)+'">'+
     '<div class="card-img"><img src="'+p.image+'" alt="'+escAttr(p.title)+'" loading="lazy"></div>'+
     '<div class="card-body">'+
-      '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
+      '<div class="pill-row"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
+      (p.challenge && challenge(p.challenge) ? '<span class="cat-pill ch-pill" title="'+escAttr(challenge(p.challenge).t)+'">🎯 '+challenge(p.challenge).e+'</span>' : '')+'</div>'+
       '<div class="card-title">'+esc(p.title)+'</div>'+
-      '<div class="card-meta"><span>'+esc(name)+'</span><span>'+fmtDate(p.date)+'</span></div>'+
+      '<div class="card-meta"><span>'+esc(name)+(p.group?' · G'+esc(p.group):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
+      reactRowHTML(p)+
     '</div></article>';
 }
 function esc(s){ var d=document.createElement('div'); d.textContent = s==null?'':s; return d.innerHTML; }
@@ -249,6 +285,8 @@ function renderHome(){
     .sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).slice(0,6);
   document.getElementById('home-recent').innerHTML = recent.map(cardHTML).join('') || emptyState('No posts yet','Be the first to share something!');
 
+  renderChallenges();
+  renderBoard(document.getElementById('board-mini'), 5);
   bindCards();
 }
 
@@ -288,6 +326,302 @@ function renderExploreGrid(){
   bindCards();
 }
 
+/* ---------- reactions ---------- */
+function reactRowHTML(p, big){
+  if(p.status !== 'approved') return '';
+  var r = reactionsOf(p), mine = (player.reacted && player.reacted[p.id]) || [];
+  return '<div class="react-row'+(big?' big':'')+'" data-react-id="'+p.id+'">'+REACTS.map(function(x){
+    return '<button type="button" class="react-btn'+(mine.indexOf(x.k)!==-1?' on':'')+'" data-r="'+x.k+'" aria-label="React '+x.e+'">'+x.e+' <b>'+(r[x.k]||0)+'</b></button>';
+  }).join('')+'</div>';
+}
+function patchReactions(){
+  document.querySelectorAll('[data-react-id]').forEach(function(row){
+    var p = posts.find(function(x){ return x.id === row.dataset.reactId; });
+    if(!p) return;
+    var r = reactionsOf(p), mine = (player.reacted && player.reacted[p.id]) || [];
+    row.querySelectorAll('.react-btn').forEach(function(b){
+      b.querySelector('b').textContent = r[b.dataset.r] || 0;
+      b.classList.toggle('on', mine.indexOf(b.dataset.r) !== -1);
+    });
+  });
+  if(currentView() === 'groups') renderBoard(document.getElementById('board-full'));
+  if(currentView() === 'home') renderBoard(document.getElementById('board-mini'), 5);
+  if(showActive()){ renderShowBoard(); renderShowCaption(); }
+}
+function burstAt(x, y, emoji){
+  for(var i=0; i<6; i++){
+    var el = document.createElement('span');
+    el.className = 'emoji-burst';
+    el.textContent = emoji;
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.style.setProperty('--dx', (Math.random()*120 - 60) + 'px');
+    el.style.setProperty('--dy', (-60 - Math.random()*90) + 'px');
+    el.style.setProperty('--rot', (Math.random()*60 - 30) + 'deg');
+    document.body.appendChild(el);
+    setTimeout(function(e){ e.remove(); }.bind(null, el), 900);
+  }
+}
+function react(id, k, x, y){
+  var p = posts.find(function(q){ return q.id === id; });
+  if(!p || p.status !== 'approved') return;
+  player.reacted = player.reacted || {};
+  var mine = player.reacted[id] || [];
+  var on = mine.indexOf(k) === -1;
+  var delta = on ? 1 : -1;
+  player.reacted[id] = on ? mine.concat(k) : mine.filter(function(m){ return m !== k; });
+  if(on) player.reactCount = (player.reactCount || 0) + 1;
+  savePlayer();
+  p.reactions = Object.assign({heart:0, laugh:0, fire:0, crown:0}, p.reactions);
+  p.reactions[k] = Math.max(0, (p.reactions[k] || 0) + delta);
+  patchReactions();
+  if(on){
+    var e = REACTS.find(function(r){ return r.k === k; }).e;
+    burstAt(x, y, e); SFX.pop();
+    if(showActive()) showReactionBurst(e, 1);
+    if(player.reactCount >= 10){ var b = grantBadge('superfan'); if(b){ toast('Badge unlocked: '+b.name, b.icon); SFX.star(); } }
+  }
+  if(cloud){
+    var u = {}; u['reactions.' + k] = firebase.firestore.FieldValue.increment(delta);
+    cloud.db.collection('posts').doc(id).update(u).catch(function(){ toast('Reaction didn\'t send. Check your internet.', '⚠️'); });
+  } else save();
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('.react-btn');
+  if(!b) return;
+  e.stopPropagation();
+  react(b.closest('[data-react-id]').dataset.reactId, b.dataset.r, e.clientX, e.clientY);
+}, true);
+
+/* ---------- daily photo challenges ---------- */
+var CHALLENGE_XP = 20;
+var CHALLENGES = [
+  {id:'roadtrip',   day:24, e:'🚌', t:'Road trip selfie with your squad'},
+  {id:'newhome',    day:24, e:'🏠', t:'Our home for 4 days'},
+  {id:'firstsmile', day:24, e:'😁', t:'First big smile of camp'},
+  {id:'cheer',      day:25, e:'📣', t:'Your group\'s cheer pose'},
+  {id:'newfriend',  day:25, e:'🤝', t:'Photo with a new friend'},
+  {id:'debateface', day:25, e:'🎤', t:'Most dramatic debate face'},
+  {id:'checkpoint', day:26, e:'🚩', t:'QuestRace checkpoint victory'},
+  {id:'yellow',     day:26, e:'💛', t:'Find something yellow'},
+  {id:'costume',    day:26, e:'🎭', t:'Best Cultural Night costume'},
+  {id:'certificate',day:27, e:'📜', t:'Certificate proud pose'},
+  {id:'goodbye',    day:27, e:'🤗', t:'Group goodbye photo'},
+  {id:'thanks',     day:27, e:'🙏', t:'Say thanks to a teacher'}
+];
+var CAMP_DAYS = [24, 25, 26, 27];
+function challenge(id){ return CHALLENGES.find(function(c){ return c.id === id; }); }
+function campToday(){
+  var n = new Date();
+  return (n.getFullYear() === 2026 && n.getMonth() === 10 && CAMP_DAYS.indexOf(n.getDate()) !== -1) ? n.getDate() : null;
+}
+var challengeDay = campToday() || 24, pendingChallenge = null;
+function renderChallenges(){
+  var el = document.getElementById('challenge-box');
+  if(!el) return;
+  var today = campToday(), done = player.challenges || [];
+  var tabs = CAMP_DAYS.map(function(d, i){
+    return '<button type="button" class="day-tab'+(d===challengeDay?' active':'')+'" data-day="'+d+'">Day '+(i+1)+(d===today?' · Today':'')+'</button>';
+  }).join('');
+  var cards = CHALLENGES.filter(function(c){ return c.day === challengeDay; }).map(function(c){
+    var shots = posts.filter(function(p){ return p.status==='approved' && p.challenge===c.id; });
+    var mine = done.indexOf(c.id) !== -1;
+    return '<div class="challenge-card'+(mine?' done':'')+'">'+
+      '<div class="ch-emoji">'+c.e+'</div>'+
+      '<div class="ch-title">'+c.t+'</div>'+
+      '<div class="ch-thumbs">'+shots.slice(0,4).map(function(p){ return '<img src="'+p.image+'" alt="" data-open="'+p.id+'">'; }).join('')+
+        '<span>'+shots.length+' photo'+(shots.length===1?'':'s')+'</span></div>'+
+      (mine ? '<div class="ch-done">✓ You did it!</div>'
+            : '<button type="button" class="btn btn-accent btn-sm" data-take="'+c.id+'">📸 Take it on · +'+CHALLENGE_XP+' XP</button>')+
+    '</div>';
+  }).join('');
+  el.innerHTML = '<div class="day-tabs">'+tabs+'</div><div class="challenge-grid">'+cards+'</div>';
+  el.querySelectorAll('.day-tab').forEach(function(t){
+    t.onclick = function(){ challengeDay = +t.dataset.day; SFX.pop(); renderChallenges(); };
+  });
+  el.querySelectorAll('[data-take]').forEach(function(b){
+    b.onclick = function(){ pendingChallenge = b.dataset.take; location.hash = '#submit'; };
+  });
+  el.querySelectorAll('[data-open]').forEach(function(img){
+    img.onclick = function(){ openPostModal(img.dataset.open); };
+  });
+}
+
+/* ---------- group leaderboard ---------- */
+var GROUP_COLORS = ['#7FD3FF','#FF8DC3','#FFD84D','#6FE3B5','#B79CFF','#FFB86B','#8EE0F0','#FF9E9E','#C6E86B','#F7A8E8','#9DB8FF','#FFCF8A'];
+var PTS_PHOTO = 10, PTS_CHALLENGE = 5;
+function boardData(){
+  var rows = [];
+  for(var g=1; g<=GROUP_COUNT; g++) rows.push({g:String(g), photos:0, reacts:0, challenges:0, pts:0});
+  posts.forEach(function(p){
+    if(p.status !== 'approved' || !p.group) return;
+    var row = rows[+p.group - 1];
+    if(!row) return;
+    var r = reactionsOf(p), n = 0;
+    REACTS.forEach(function(x){ n += r[x.k] || 0; });
+    row.photos++; row.reacts += n; if(p.challenge) row.challenges++;
+  });
+  rows.forEach(function(r){ r.pts = r.photos*PTS_PHOTO + r.reacts + r.challenges*PTS_CHALLENGE; });
+  return rows.sort(function(a, b){ return b.pts - a.pts || a.g - b.g; });
+}
+function renderBoard(el, limit){
+  if(!el) return;
+  var rows = boardData(), max = Math.max(1, rows[0].pts);
+  if(limit) rows = rows.slice(0, limit);
+  // FLIP: remember where each row and bar was, rebuild, then animate from there
+  var old = {};
+  el.querySelectorAll('.board-row').forEach(function(r){
+    old[r.dataset.g] = {top:r.getBoundingClientRect().top, w:r.querySelector('.bar i').getBoundingClientRect().width};
+  });
+  var medals = ['🥇','🥈','🥉'];
+  el.innerHTML = rows.map(function(r, i){
+    return '<div class="board-row" data-g="'+r.g+'">'+
+      '<span class="rank">'+(r.pts && i<3 ? medals[i] : '#'+(i+1))+'</span>'+
+      '<span class="gname"><i style="background:'+GROUP_COLORS[(+r.g-1)%GROUP_COLORS.length]+'"></i>Group '+r.g+'</span>'+
+      '<span class="bar"><i style="width:'+(r.pts/max*100)+'%; background:'+GROUP_COLORS[(+r.g-1)%GROUP_COLORS.length]+'"></i></span>'+
+      '<span class="pts"><b>'+r.pts+'</b> pts</span>'+
+      '<span class="breakdown">📸 '+r.photos+' · 💖 '+r.reacts+' · 🎯 '+r.challenges+'</span>'+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('.board-row').forEach(function(r){
+    var o = old[r.dataset.g], bar = r.querySelector('.bar i');
+    if(!r.animate) return;
+    if(o){
+      var dy = o.top - r.getBoundingClientRect().top;
+      if(dy) r.animate([{transform:'translateY('+dy+'px)'}, {transform:'none'}], {duration:650, easing:'cubic-bezier(.34,1.56,.64,1)'});
+      bar.animate([{width:o.w+'px'}, {width:bar.style.width}], {duration:650, easing:'ease-out'});
+    } else {
+      bar.animate([{width:'0%'}, {width:bar.style.width}], {duration:900, easing:'cubic-bezier(.34,1.56,.64,1)'});
+    }
+  });
+}
+
+/* ---------- Big Screen slideshow ---------- */
+var SHOW_MS = 7000;
+var show = {list:[], i:0, timer:null, paused:false, layer:0, qr:false};
+function showActive(){ return currentView() === 'show'; }
+function showList(){
+  return posts.filter(function(p){ return p.status === 'approved'; })
+    .sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+}
+function startShow(){
+  document.body.classList.add('show-mode');
+  show.list = showList();
+  show.i = 0;
+  document.getElementById('show-empty').hidden = show.list.length > 0;
+  renderShowBoard();
+  if(!show.qr && window.QRCode){
+    show.qr = true;
+    new QRCode(document.getElementById('show-qr'), {text: location.href.split('#')[0] + '#submit', width:150, height:150, colorDark:'#3B2A63', colorLight:'#ffffff'});
+  }
+  if(show.list.length) showSlide(0);
+  wakeControls();
+}
+function stopShow(){
+  document.body.classList.remove('show-mode');
+  clearTimeout(show.timer);
+  if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){});
+}
+function showCurrent(){ return show.list[show.i]; }
+function showSlide(i){
+  if(!show.list.length) return;
+  show.i = (i + show.list.length) % show.list.length;
+  var p = showCurrent();
+  show.layer = 1 - show.layer;
+  var slide = document.getElementById('show-slide-' + show.layer);
+  var other = document.getElementById('show-slide-' + (1 - show.layer));
+  fullImage(p).then(function(src){
+    if(showCurrent() !== p) return;
+    slide.querySelector('.show-bg').style.backgroundImage = 'url("' + src + '")';
+    var img = slide.querySelector('img');
+    img.onload = function(){
+      slide.classList.remove('active'); void slide.offsetWidth;
+      slide.classList.add('active'); other.classList.remove('active');
+    };
+    img.src = src;
+  });
+  renderShowCaption();
+  var bar = document.getElementById('show-progress');
+  bar.style.transition = 'none'; bar.style.width = '0%'; void bar.offsetWidth;
+  if(!show.paused){ bar.style.transition = 'width ' + SHOW_MS + 'ms linear'; bar.style.width = '100%'; }
+  clearTimeout(show.timer);
+  if(!show.paused) show.timer = setTimeout(function(){ showSlide(show.i + 1); }, SHOW_MS);
+  var next = show.list[(show.i + 1) % show.list.length];
+  if(next) fullImage(next).then(function(src){ new Image().src = src; });
+}
+function renderShowCaption(){
+  var p = showCurrent(), el = document.getElementById('show-caption');
+  if(!p){ el.innerHTML = ''; return; }
+  var c = cat(p.category), ch = p.challenge && challenge(p.challenge), r = reactionsOf(p);
+  el.innerHTML =
+    '<div class="show-pills"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
+    (ch ? '<span class="cat-pill ch-pill">🎯 '+esc(ch.t)+'</span>' : '')+'</div>'+
+    '<div class="show-title">'+esc(p.title)+'</div>'+
+    '<div class="show-meta">📸 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+' · '+fmtDate(p.date)+'</div>'+
+    '<div class="show-reacts">'+REACTS.map(function(x){ return '<span>'+x.e+' '+(r[x.k]||0)+'</span>'; }).join('')+'</div>';
+}
+function renderShowBoard(){
+  var rows = boardData().filter(function(r){ return r.pts > 0; }).slice(0, 3), medals = ['🥇','🥈','🥉'];
+  document.getElementById('show-board').innerHTML = rows.length
+    ? '<b>Group Race</b>' + rows.map(function(r, i){ return '<div>'+medals[i]+' Group '+r.g+' <span>'+r.pts+' pts</span></div>'; }).join('')
+    : '';
+}
+function showNewPhoto(p){
+  show.list = showList();
+  document.getElementById('show-empty').hidden = true;
+  var i = show.list.indexOf(p);
+  showSlide(i === -1 ? 0 : i);
+  var banner = document.getElementById('show-new');
+  banner.classList.remove('pop'); void banner.offsetWidth; banner.classList.add('pop');
+  confetti(); SFX.fanfare();
+  renderShowBoard();
+}
+function showReactionBurst(emoji, n){
+  var layer = document.getElementById('show-react-layer');
+  for(var i=0; i<Math.min(n, 6); i++){
+    var el = document.createElement('span');
+    el.className = 'show-float';
+    el.textContent = emoji;
+    el.style.left = (8 + Math.random()*84) + '%';
+    el.style.animationDelay = (i*120) + 'ms';
+    el.style.fontSize = (2.4 + Math.random()*2) + 'rem';
+    layer.appendChild(el);
+    setTimeout(function(e){ e.remove(); }.bind(null, el), 3400);
+  }
+}
+function togglePause(){
+  show.paused = !show.paused;
+  document.getElementById('show-play').textContent = show.paused ? '▶️' : '⏸️';
+  showSlide(show.i);
+}
+function toggleFullscreen(){
+  var el = document.documentElement;
+  if(document.fullscreenElement) document.exitFullscreen();
+  else if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
+}
+var wakeTimer = null;
+function wakeControls(){
+  var stage = document.getElementById('show-stage');
+  stage.classList.add('awake');
+  clearTimeout(wakeTimer);
+  wakeTimer = setTimeout(function(){ stage.classList.remove('awake'); }, 2500);
+}
+document.getElementById('show-stage').addEventListener('mousemove', wakeControls);
+document.getElementById('show-prev').onclick = function(){ showSlide(show.i - 1); };
+document.getElementById('show-next').onclick = function(){ showSlide(show.i + 1); };
+document.getElementById('show-play').onclick = togglePause;
+document.getElementById('show-full').onclick = toggleFullscreen;
+document.getElementById('show-exit').onclick = function(){ location.hash = '#home'; };
+document.addEventListener('keydown', function(e){
+  if(!showActive()) return;
+  if(e.key === 'ArrowRight') showSlide(show.i + 1);
+  else if(e.key === 'ArrowLeft') showSlide(show.i - 1);
+  else if(e.key === ' '){ e.preventDefault(); togglePause(); }
+  else if(e.key === 'f' || e.key === 'F') toggleFullscreen();
+  else if(e.key === 'Escape' && !document.fullscreenElement) location.hash = '#home';
+  else return;
+  wakeControls();
+});
+
 /* ---------- card click -> modal ---------- */
 function bindCards(){
   document.querySelectorAll('.card[data-id]').forEach(function(card){
@@ -304,11 +638,14 @@ function openPostModal(id){
   modalImg.alt = p.title;
   modalImg.dataset.id = p.id;
   fullImage(p).then(function(src){ if(modalImg.dataset.id === p.id) modalImg.src = src; });
+  var ch = p.challenge && challenge(p.challenge);
   document.getElementById('post-modal-body').innerHTML =
-    '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
+    '<div class="pill-row"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
+    (ch ? '<span class="cat-pill ch-pill">🎯 '+ch.e+' '+esc(ch.t)+'</span>' : '')+'</div>'+
     '<h3 style="margin:10px 0 6px">'+esc(p.title)+'</h3>'+
     '<p style="color:var(--muted)">'+esc(p.description||'No description added.')+'</p>'+
-    '<div class="card-meta" style="margin-top:14px"><span>👤 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+'</span><span>'+fmtDate(p.date)+'</span></div>';
+    '<div class="card-meta" style="margin-top:14px"><span>👤 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
+    reactRowHTML(p, true);
   document.getElementById('post-scrim').classList.add('show');
 }
 document.getElementById('post-close').addEventListener('click', function(){ document.getElementById('post-scrim').classList.remove('show'); });
@@ -332,7 +669,7 @@ var STICKERS = ['⭐','💖','🌸','✨','🐾','🌈','🍓','😎','🎀','�
 
 /* player progress (per browser) */
 var PLAYER_KEY = 'sharespace_player_v1';
-var player = {xp:0, shares:0, pokes:0, badges:[], sound:true};
+var player = {xp:0, shares:0, pokes:0, badges:[], sound:true, reacted:{}, reactCount:0, challenges:[]};
 try{ var rawPlayer = localStorage.getItem(PLAYER_KEY); if(rawPlayer) player = Object.assign(player, JSON.parse(rawPlayer)); }catch(e){}
 function savePlayer(){ try{ localStorage.setItem(PLAYER_KEY, JSON.stringify(player)); }catch(e){} }
 
@@ -347,7 +684,9 @@ var BADGES = [
   {id:'artist', icon:'🎨', name:'Sticker Artist',     desc:'Use 3+ stickers on one photo'},
   {id:'squad',  icon:'📣', name:'Team Spirit',        desc:'Tag your group in a photo'},
   {id:'agent',  icon:'🕶️', name:'Secret Agent',       desc:'Post anonymously'},
-  {id:'buds',   icon:'💚', name:'Best Buds',          desc:'Poke Mochi 10 times'}
+  {id:'buds',   icon:'💚', name:'Best Buds',          desc:'Poke Mochi 10 times'},
+  {id:'quester',icon:'🎯', name:'Challenge Accepted', desc:'Complete a daily photo challenge'},
+  {id:'superfan',icon:'💖', name:'Super Fan',         desc:'React to photos 10 times'}
 ];
 function badge(id){ return BADGES.find(function(b){ return b.id===id; }); }
 function grantBadge(id){
@@ -781,6 +1120,29 @@ groupSelect.addEventListener('change', function(){
   if(groupSelect.value && !awarded.group){ awarded.group = true; addXP(GROUP_XP); say('Go Group '+groupSelect.value+'! 📣'); }
 });
 
+var challengeSelect = document.getElementById('f-challenge');
+CAMP_DAYS.forEach(function(d, i){
+  challengeSelect.insertAdjacentHTML('beforeend', '<optgroup label="Day '+(i+1)+'">'+
+    CHALLENGES.filter(function(c){ return c.day === d; }).map(function(c){
+      return '<option value="'+c.id+'">'+c.e+' '+c.t+'</option>';
+    }).join('')+'</optgroup>');
+});
+function onChallengePicked(){
+  SFX.pop();
+  if(challengeSelect.value && !awarded.challenge){
+    awarded.challenge = true; addXP(CHALLENGE_XP);
+    say('Challenge accepted! 🎯 ' + challenge(challengeSelect.value).e);
+  }
+}
+challengeSelect.addEventListener('change', onChallengePicked);
+// arriving from a "Take it on" button on the home page
+function applyPendingChallenge(){
+  if(!pendingChallenge) return;
+  challengeSelect.value = pendingChallenge;
+  pendingChallenge = null;
+  onChallengePicked();
+}
+
 /* launch! */
 var launching = false;
 document.getElementById('submit-form').addEventListener('submit', function(e){
@@ -816,6 +1178,8 @@ document.getElementById('submit-form').addEventListener('submit', function(e){
       displayName: isAnon ? 'Anonymous' : nameInput.value.trim(),
       anonymous: isAnon,
       group: groupSelect.value,
+      challenge: challengeSelect.value,
+      reactions: {heart:0, laugh:0, fire:0, crown:0},
       image: img.thumb,
       date: new Date().toISOString(),
       status: 'pending'
@@ -837,6 +1201,10 @@ function finishQuest(stickerCount){
   var oldLevel = levelOf(player.xp);
   player.xp += earned;
   player.shares = (player.shares || 0) + 1;
+  if(challengeSelect.value){
+    player.challenges = player.challenges || [];
+    if(player.challenges.indexOf(challengeSelect.value) === -1) player.challenges.push(challengeSelect.value);
+  }
   savePlayer();
 
   var unlocked = [];
@@ -846,8 +1214,9 @@ function finishQuest(stickerCount){
   check(stickerCount >= 3, 'artist');
   check(!!groupSelect.value, 'squad');
   check(isAnon, 'agent');
+  check(!!challengeSelect.value, 'quester');
 
-  var bonuses = [!!awarded.desc, stickerCount > 0, !!groupSelect.value].filter(Boolean).length;
+  var bonuses = [!!awarded.desc, stickerCount > 0, !!groupSelect.value, !!challengeSelect.value].filter(Boolean).length;
   var starCount = 1 + Math.min(2, bonuses);
 
   document.getElementById('submit-form').hidden = true;
