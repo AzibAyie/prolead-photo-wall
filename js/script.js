@@ -204,7 +204,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','groups','submit','admin','show'];
+var VIEWS = ['home','explore','challenges','submit','admin','show'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
@@ -227,13 +227,12 @@ function renderCurrent(){
   var hash = currentView();
   if(hash === 'home') renderHome();
   if(hash === 'explore') renderExplore();
-  if(hash === 'groups') renderBoard(document.getElementById('board-full'));
+  if(hash === 'challenges') renderChallenges();
   if(hash === 'admin') renderAdmin();
   if(hash === 'show'){
     show.list = showList();
     document.getElementById('show-empty').hidden = show.list.length > 0;
     if(show.list.length && show.list.indexOf(showCurrent()) === -1) showSlide(0);
-    renderShowBoard();
   }
 }
 window.addEventListener('hashchange', route);
@@ -286,7 +285,6 @@ function renderHome(){
   document.getElementById('home-recent').innerHTML = recent.map(cardHTML).join('') || emptyState('No posts yet','Be the first to share something!');
 
   renderChallenges();
-  renderBoard(document.getElementById('board-mini'), 5);
   bindCards();
 }
 
@@ -344,9 +342,7 @@ function patchReactions(){
       b.classList.toggle('on', mine.indexOf(b.dataset.r) !== -1);
     });
   });
-  if(currentView() === 'groups') renderBoard(document.getElementById('board-full'));
-  if(currentView() === 'home') renderBoard(document.getElementById('board-mini'), 5);
-  if(showActive()){ renderShowBoard(); renderShowCaption(); }
+  if(showActive()) renderShowCaption();
 }
 function burstAt(x, y, emoji){
   for(var i=0; i<6; i++){
@@ -416,8 +412,9 @@ function campToday(){
 }
 var challengeDay = campToday() || 24, pendingChallenge = null;
 function renderChallenges(){
-  var el = document.getElementById('challenge-box');
-  if(!el) return;
+  document.querySelectorAll('.challenge-box').forEach(renderChallengeBox);
+}
+function renderChallengeBox(el){
   var today = campToday(), done = player.challenges || [];
   var tabs = CAMP_DAYS.map(function(d, i){
     return '<button type="button" class="day-tab'+(d===challengeDay?' active':'')+'" data-day="'+d+'">Day '+(i+1)+(d===today?' · Today':'')+'</button>';
@@ -446,55 +443,6 @@ function renderChallenges(){
   });
 }
 
-/* ---------- group leaderboard ---------- */
-var GROUP_COLORS = ['#7FD3FF','#FF8DC3','#FFD84D','#6FE3B5','#B79CFF','#FFB86B','#8EE0F0','#FF9E9E','#C6E86B','#F7A8E8','#9DB8FF','#FFCF8A'];
-var PTS_PHOTO = 10, PTS_CHALLENGE = 5;
-function boardData(){
-  var rows = [];
-  for(var g=1; g<=GROUP_COUNT; g++) rows.push({g:String(g), photos:0, reacts:0, challenges:0, pts:0});
-  posts.forEach(function(p){
-    if(p.status !== 'approved' || !p.group) return;
-    var row = rows[+p.group - 1];
-    if(!row) return;
-    var r = reactionsOf(p), n = 0;
-    REACTS.forEach(function(x){ n += r[x.k] || 0; });
-    row.photos++; row.reacts += n; if(p.challenge) row.challenges++;
-  });
-  rows.forEach(function(r){ r.pts = r.photos*PTS_PHOTO + r.reacts + r.challenges*PTS_CHALLENGE; });
-  return rows.sort(function(a, b){ return b.pts - a.pts || a.g - b.g; });
-}
-function renderBoard(el, limit){
-  if(!el) return;
-  var rows = boardData(), max = Math.max(1, rows[0].pts);
-  if(limit) rows = rows.slice(0, limit);
-  // FLIP: remember where each row and bar was, rebuild, then animate from there
-  var old = {};
-  el.querySelectorAll('.board-row').forEach(function(r){
-    old[r.dataset.g] = {top:r.getBoundingClientRect().top, w:r.querySelector('.bar i').getBoundingClientRect().width};
-  });
-  var medals = ['🥇','🥈','🥉'];
-  el.innerHTML = rows.map(function(r, i){
-    return '<div class="board-row" data-g="'+r.g+'">'+
-      '<span class="rank">'+(r.pts && i<3 ? medals[i] : '#'+(i+1))+'</span>'+
-      '<span class="gname"><i style="background:'+GROUP_COLORS[(+r.g-1)%GROUP_COLORS.length]+'"></i>Group '+r.g+'</span>'+
-      '<span class="bar"><i style="width:'+(r.pts/max*100)+'%; background:'+GROUP_COLORS[(+r.g-1)%GROUP_COLORS.length]+'"></i></span>'+
-      '<span class="pts"><b>'+r.pts+'</b> pts</span>'+
-      '<span class="breakdown">📸 '+r.photos+' · 💖 '+r.reacts+' · 🎯 '+r.challenges+'</span>'+
-    '</div>';
-  }).join('');
-  el.querySelectorAll('.board-row').forEach(function(r){
-    var o = old[r.dataset.g], bar = r.querySelector('.bar i');
-    if(!r.animate) return;
-    if(o){
-      var dy = o.top - r.getBoundingClientRect().top;
-      if(dy) r.animate([{transform:'translateY('+dy+'px)'}, {transform:'none'}], {duration:650, easing:'cubic-bezier(.34,1.56,.64,1)'});
-      bar.animate([{width:o.w+'px'}, {width:bar.style.width}], {duration:650, easing:'ease-out'});
-    } else {
-      bar.animate([{width:'0%'}, {width:bar.style.width}], {duration:900, easing:'cubic-bezier(.34,1.56,.64,1)'});
-    }
-  });
-}
-
 /* ---------- Big Screen slideshow ---------- */
 var SHOW_MS = 7000;
 var show = {list:[], i:0, timer:null, paused:false, layer:0, qr:false};
@@ -508,7 +456,6 @@ function startShow(){
   show.list = showList();
   show.i = 0;
   document.getElementById('show-empty').hidden = show.list.length > 0;
-  renderShowBoard();
   if(!show.qr && window.QRCode){
     show.qr = true;
     new QRCode(document.getElementById('show-qr'), {text: location.href.split('#')[0] + '#submit', width:150, height:150, colorDark:'#3B2A63', colorLight:'#ffffff'});
@@ -559,12 +506,6 @@ function renderShowCaption(){
     '<div class="show-meta">📸 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+' · '+fmtDate(p.date)+'</div>'+
     '<div class="show-reacts">'+REACTS.map(function(x){ return '<span>'+x.e+' '+(r[x.k]||0)+'</span>'; }).join('')+'</div>';
 }
-function renderShowBoard(){
-  var rows = boardData().filter(function(r){ return r.pts > 0; }).slice(0, 3), medals = ['🥇','🥈','🥉'];
-  document.getElementById('show-board').innerHTML = rows.length
-    ? '<b>Group Race</b>' + rows.map(function(r, i){ return '<div>'+medals[i]+' Group '+r.g+' <span>'+r.pts+' pts</span></div>'; }).join('')
-    : '';
-}
 function showNewPhoto(p){
   show.list = showList();
   document.getElementById('show-empty').hidden = true;
@@ -573,7 +514,6 @@ function showNewPhoto(p){
   var banner = document.getElementById('show-new');
   banner.classList.remove('pop'); void banner.offsetWidth; banner.classList.add('pop');
   confetti(); SFX.fanfare();
-  renderShowBoard();
 }
 function showReactionBurst(emoji, n){
   var layer = document.getElementById('show-react-layer');
@@ -767,14 +707,14 @@ function musicNote(dest, m, t, dur, type, vol, attack){
 }
 function scheduleBar(t, i){
   var b = music.bus, step = PROG[i % PROG.length], mel = MELODY[i % MELODY.length];
-  step[1].forEach(function(m){ musicNote(b.pad, m, t, BEAT*4 + .6, 'triangle', .05, .7); });   // soft pad
-  musicNote(b.pad, step[0], t, BEAT*1.8, 'sine', .16, .03);                                   // bass
-  musicNote(b.pad, step[0], t + BEAT*2, BEAT*1.8, 'sine', .12, .03);
+  step[1].forEach(function(m){ musicNote(b.pad, m, t, BEAT*4 + .6, 'triangle', .07, .7); });   // soft pad
+  musicNote(b.pad, step[0], t, BEAT*1.8, 'sine', .22, .03);                                   // bass
+  musicNote(b.pad, step[0], t + BEAT*2, BEAT*1.8, 'sine', .17, .03);
   mel.forEach(function(m, k){                                                                  // music box
     if(!m) return;
     var at = t + k*EIGHTH + (k % 2 ? .02 : 0);   // a tiny swing
-    musicNote(b.box, m, at, 1.4, 'sine', .09, .005);
-    musicNote(b.box, m + 12, at, .5, 'sine', .015, .005);
+    musicNote(b.box, m, at, 1.4, 'sine', .14, .005);
+    musicNote(b.box, m + 12, at, .5, 'sine', .025, .005);
   });
 }
 function musicTick(){
@@ -783,11 +723,28 @@ function musicTick(){
     music.nextBar += BEAT * 4;
   }
 }
+// Browsers keep audio muted until the visitor taps. Only count the music as playing once the
+// browser has really unmuted; otherwise stay "waiting" and try again on the next tap.
 function startMusic(){
   if(music.playing || !music.on) return;
+  // Only try while the browser counts this as a real tap; an early attempt (e.g. the moment a finger
+  // lands on a phone) gets put on hold by the browser and would swallow the tap that does count.
+  var ua = navigator.userActivation;
+  if(ua && !ua.isActive && !(audioCtx && audioCtx.state === 'running')) return;
   try{
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }catch(e){ return; }
+  // a silent blip inside the tap helps some phones unlock audio
+  try{ var s = audioCtx.createBufferSource(); s.buffer = audioCtx.createBuffer(1, 1, 22050); s.connect(audioCtx.destination); s.start(0); }catch(e){}
+  var resumed = audioCtx.state === 'running' ? Promise.resolve() : audioCtx.resume();
+  Promise.resolve(resumed).then(function(){
+    if(audioCtx.state === 'running' && music.on && !document.hidden) beginMusic();
+    renderMusicBtn();
+  }, function(){ renderMusicBtn(); });
+}
+function beginMusic(){
+  if(music.playing) return;
+  try{
     if(!music.bus){
       var master = audioCtx.createGain(), warm = audioCtx.createBiquadFilter(), delay = audioCtx.createDelay(), fb = audioCtx.createGain();
       warm.type = 'lowpass'; warm.frequency.value = 1800;
@@ -799,7 +756,7 @@ function startMusic(){
       music.bus = {master:master, box:box, pad:pad};
     }
     music.bus.master.gain.cancelScheduledValues(audioCtx.currentTime);
-    music.bus.master.gain.setTargetAtTime(.55, audioCtx.currentTime, 1.2);   // gentle fade in
+    music.bus.master.gain.setTargetAtTime(.9, audioCtx.currentTime, 1.2);   // gentle fade in
     music.nextBar = audioCtx.currentTime + .1;
     music.timer = setInterval(musicTick, 250);
     musicTick();
@@ -830,13 +787,15 @@ document.getElementById('music-btn').addEventListener('click', function(e){
   if(music.on) startMusic(); else stopMusic();
   renderMusicBtn();
 });
-// browsers only allow sound after the visitor interacts, so start on the first tap or key press
-['pointerdown','keydown'].forEach(function(ev){
+// Start on the visitor's first interaction. Phones only treat a finished tap (touchend / click) as
+// permission, not the moment the finger lands, so listen to all of these and keep retrying.
+['mousedown','pointerup','touchend','click','keydown'].forEach(function(ev){
   document.addEventListener(ev, function(e){
     if(e.target.closest && e.target.closest('#music-btn')) return;
     music.unlocked = true;
+    if(music.playing && audioCtx.state !== 'running') audioCtx.resume();   // e.g. after the phone screen was locked
     startMusic();
-  });
+  }, {passive:true});
 });
 document.addEventListener('visibilitychange', function(){
   if(document.hidden) stopMusic(); else if(music.unlocked) startMusic();
