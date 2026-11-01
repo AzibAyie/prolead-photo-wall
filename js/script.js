@@ -256,6 +256,7 @@ function cardHTML(p){
       '<div class="card-title">'+esc(p.title)+'</div>'+
       '<div class="card-meta"><span>'+esc(name)+(p.group?' · G'+esc(p.group):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
       reactRowHTML(p)+
+      (p.status === 'approved' ? '<div class="react-sum" data-sum-id="'+p.id+'">'+reactSummary(p)+'</div>' : '')+
     '</div></article>';
 }
 function esc(s){ var d=document.createElement('div'); d.textContent = s==null?'':s; return d.innerHTML; }
@@ -332,7 +333,16 @@ function reactRowHTML(p, big){
     return '<button type="button" class="react-btn'+(mine.indexOf(x.k)!==-1?' on':'')+'" data-r="'+x.k+'" aria-label="React '+x.e+'">'+x.e+' <b>'+(r[x.k]||0)+'</b></button>';
   }).join('')+'</div>';
 }
+function reactSummary(p){
+  var r = reactionsOf(p), total = 0;
+  REACTS.forEach(function(x){ total += r[x.k] || 0; });
+  return '<span>♥</span> ' + total;
+}
 function patchReactions(){
+  document.querySelectorAll('[data-sum-id]').forEach(function(el){
+    var p = posts.find(function(x){ return x.id === el.dataset.sumId; });
+    if(p) el.innerHTML = reactSummary(p);
+  });
   document.querySelectorAll('[data-react-id]').forEach(function(row){
     var p = posts.find(function(x){ return x.id === row.dataset.reactId; });
     if(!p) return;
@@ -428,7 +438,7 @@ function renderChallengeBox(el){
       '<div class="ch-thumbs">'+shots.slice(0,4).map(function(p){ return '<img src="'+p.image+'" alt="" data-open="'+p.id+'">'; }).join('')+
         '<span>'+shots.length+' photo'+(shots.length===1?'':'s')+'</span></div>'+
       (mine ? '<div class="ch-done">✓ You did it!</div>'
-            : '<button type="button" class="btn btn-accent btn-sm" data-take="'+c.id+'">📸 Take it on · +'+CHALLENGE_XP+' XP</button>')+
+            : '<button type="button" class="btn btn-accent btn-sm" data-take="'+c.id+'">Take it on · +'+CHALLENGE_XP+' XP</button>')+
     '</div>';
   }).join('');
   el.innerHTML = '<div class="day-tabs">'+tabs+'</div><div class="challenge-grid">'+cards+'</div>';
@@ -445,7 +455,7 @@ function renderChallengeBox(el){
 
 /* ---------- Big Screen slideshow ---------- */
 var SHOW_MS = 7000;
-var show = {list:[], i:0, timer:null, paused:false, layer:0, qr:false};
+var show = {list:[], i:0, timer:null, paused:false, layer:0};
 function showActive(){ return currentView() === 'show'; }
 function showList(){
   return posts.filter(function(p){ return p.status === 'approved'; })
@@ -456,10 +466,6 @@ function startShow(){
   show.list = showList();
   show.i = 0;
   document.getElementById('show-empty').hidden = show.list.length > 0;
-  if(!show.qr && window.QRCode){
-    show.qr = true;
-    new QRCode(document.getElementById('show-qr'), {text: location.href.split('#')[0] + '#submit', width:150, height:150, colorDark:'#3B2A63', colorLight:'#ffffff'});
-  }
   if(show.list.length) showSlide(0);
   wakeControls();
 }
@@ -530,7 +536,7 @@ function showReactionBurst(emoji, n){
 }
 function togglePause(){
   show.paused = !show.paused;
-  document.getElementById('show-play').textContent = show.paused ? '▶️' : '⏸️';
+  document.getElementById('show-play').innerHTML = show.paused ? '<svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 5l12 7-12 7z"/></svg>' : '<svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>';
   showSlide(show.i);
 }
 function toggleFullscreen(){
@@ -838,13 +844,15 @@ function stopMusic(){
   renderMusicBtn();
 }
 function renderMusicBtn(){
-  var btn = document.getElementById('music-btn');
-  btn.classList.toggle('playing', music.playing);
-  btn.classList.toggle('waiting', music.on && !music.playing);
-  btn.setAttribute('aria-pressed', String(music.on));
-  btn.title = music.on ? 'Cozy music: on (click to turn off)' : 'Cozy music: off (click to turn on)';
+  ['music-btn', 'show-music'].forEach(function(id){
+    var btn = document.getElementById(id);
+    btn.classList.toggle('playing', music.playing);
+    btn.classList.toggle('waiting', music.on && !music.playing);
+    btn.setAttribute('aria-pressed', String(music.on));
+    btn.title = music.on ? 'Cozy music: on (tap to turn off)' : 'Cozy music: off (tap to turn on)';
+  });
 }
-document.getElementById('music-btn').addEventListener('click', function(e){
+function onMusicBtn(e){
   e.stopPropagation();
   music.unlocked = true;
   if(music.on && !music.playing){ startMusic(); return; }   // first click just starts it
@@ -852,12 +860,14 @@ document.getElementById('music-btn').addEventListener('click', function(e){
   player.music = music.on; savePlayer();
   if(music.on) startMusic(); else stopMusic();
   renderMusicBtn();
-});
+}
+document.getElementById('music-btn').addEventListener('click', onMusicBtn);
+document.getElementById('show-music').addEventListener('click', onMusicBtn);
 // Start on the visitor's first interaction. Phones only treat a finished tap (touchend / click) as
 // permission, not the moment the finger lands, so listen to all of these and keep retrying.
 ['mousedown','pointerup','touchend','click','keydown'].forEach(function(ev){
   document.addEventListener(ev, function(e){
-    if(e.target.closest && e.target.closest('#music-btn')) return;
+    if(e.target.closest && e.target.closest('#music-btn, #show-music')) return;
     music.unlocked = true;
     if(music.playing && audioCtx.state !== 'running') audioCtx.resume();   // e.g. after the phone screen was locked
     startMusic();
