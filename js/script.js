@@ -47,16 +47,6 @@ function seedPosts(){
     cultural:['Cultural Night rehearsal','Costumes ready!','Showtime on stage'],
     closing:['Certificates for everyone','Top 3 group hampers','One last group photo']
   };
-  var infoTitles = {
-    arrival:'Camp Rules & Safety at a Glance',
-    icebreak:'Meet the 12 Groups',
-    debate:'How a Parliamentary Debate Works',
-    questrace:'QuestRace Checkpoint Map',
-    integrity:'What Integrity Looks Like',
-    groups:'Teamwork in 4 Steps',
-    cultural:'Cultural Night Line-up',
-    closing:'Camp Highlights in Numbers'
-  };
   var day = {arrival:24, icebreak:25, debate:25, questrace:26, integrity:26, groups:26, cultural:26, closing:27};
   var posts = [];
   var id = 1;
@@ -65,24 +55,17 @@ function seedPosts(){
       posts.push({
         id:'p'+id, title:t, category:c.id, description:'A moment from '+c.name+' at ProLead: Dare to Lead Camp.',
         displayName: SAMPLE_NAMES[id%SAMPLE_NAMES.length], anonymous:false, group: String(id%GROUP_COUNT + 1),
-        image: placeholderImg(c.id, id), isInfographic:false,
+        image: placeholderImg(c.id, id),
         date: campDate(day[c.id], 9 + i*3), status:'approved'
       });
       id++;
     });
-    posts.push({
-      id:'p'+id, title:infoTitles[c.id], category:c.id, description:'A quick visual guide for '+c.name+'.',
-      displayName:'Media Team', anonymous:false, group:'',
-      image: placeholderImg(c.id, id+50), isInfographic:true,
-      date: campDate(day[c.id], 8), status:'approved'
-    });
-    id++;
   });
   // a few pending, for the admin demo
   posts.push({id:'p'+id++, title:'Group 7 wins checkpoint 3', category:'questrace', description:'Fastest team at the rope challenge!',
-    displayName:'Anonymous', anonymous:true, group:'7', image: placeholderImg('questrace', 77), isInfographic:false, date: campDate(26, 11), status:'pending'});
+    displayName:'Anonymous', anonymous:true, group:'7', image: placeholderImg('questrace', 77), date: campDate(26, 11), status:'pending'});
   posts.push({id:'p'+id++, title:'Supper after Cultural Night', category:'cultural', description:'Well earned.',
-    displayName:'Facilitator', anonymous:false, group:'', image: placeholderImg('cultural', 81), isInfographic:false, date: campDate(26, 22), status:'pending'});
+    displayName:'Facilitator', anonymous:false, group:'', image: placeholderImg('cultural', 81), date: campDate(26, 22), status:'pending'});
   return posts;
 }
 function campDate(d, h){ return new Date(2026, 10, d, h).toISOString(); }
@@ -91,7 +74,7 @@ function groupLabel(p){ return p.group ? 'Group '+p.group : ''; }
 
 /* ---------- state + persistence ---------- */
 // Cloud mode (Firebase) when js/firebase-config.js is filled in, otherwise a local demo in this browser.
-var STORE_KEY = 'prolead_posts_v1';
+var STORE_KEY = 'prolead_posts_v2';
 var posts = [];
 var isAdmin = false;
 var cloud = null;
@@ -217,7 +200,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','infographics','submit','admin'];
+var VIEWS = ['home','explore','submit','admin'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
@@ -239,7 +222,6 @@ function renderCurrent(){
   var hash = currentView();
   if(hash === 'home') renderHome();
   if(hash === 'explore') renderExplore();
-  if(hash === 'infographics') renderInfographics();
   if(hash === 'admin') renderAdmin();
 }
 window.addEventListener('hashchange', route);
@@ -289,20 +271,6 @@ function renderHome(){
     .sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).slice(0,6);
   document.getElementById('home-recent').innerHTML = recent.map(cardHTML).join('') || emptyState('No posts yet','Be the first to share something!');
 
-  var infographics = posts.filter(function(p){return p.status==='approved' && p.isInfographic;})
-    .sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
-  var featWrap = document.getElementById('home-featured-wrap');
-  var featEl = document.getElementById('home-featured');
-  if(infographics.length){
-    var f = infographics[0];
-    var c = cat(f.category);
-    featWrap.hidden = false;
-    featEl.innerHTML = '<article class="card" data-id="'+f.id+'" style="cursor:pointer; display:grid; grid-template-columns:1fr 1.1fr; align-items:stretch; max-width:760px">'+
-      '<div class="card-img" style="aspect-ratio:auto"><img src="'+f.image+'" alt="'+escAttr(f.title)+'" style="height:100%"></div>'+
-      '<div class="card-body" style="padding:22px"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
-      '<div class="card-title" style="font-size:1.25rem; margin-top:6px">'+esc(f.title)+'</div>'+
-      '<p class="hint" style="margin:8px 0 0">'+esc(f.description)+'</p></div></article>';
-  } else { featWrap.hidden = true; }
   bindCards();
 }
 
@@ -342,22 +310,6 @@ function renderExploreGrid(){
   bindCards();
 }
 
-/* ---------- INFOGRAPHICS ---------- */
-var infoCat = 'all';
-function renderInfographics(){
-  var catsEl = document.getElementById('info-categories');
-  var all = [{id:'all', name:'All', color:'#1D2B24', bg:'#EDEAE2', icon:'M4 7h16M4 12h16M4 17h16'}].concat(CATS);
-  catsEl.innerHTML = all.map(function(c){ return chipHTML(c, c.id===infoCat); }).join('');
-  catsEl.querySelectorAll('.chip').forEach(function(ch){
-    ch.addEventListener('click', function(){ infoCat = ch.dataset.cat; renderInfographics(); });
-  });
-  var list = posts.filter(function(p){ return p.status==='approved' && p.isInfographic && (infoCat==='all'||p.category===infoCat); })
-    .sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
-  var grid = document.getElementById('info-grid');
-  grid.innerHTML = list.length ? list.map(cardHTML).join('') : emptyState('No infographics here yet','Check another category or add your own!');
-  bindCards();
-}
-
 /* ---------- card click -> modal ---------- */
 function bindCards(){
   document.querySelectorAll('.card[data-id]').forEach(function(card){
@@ -375,7 +327,7 @@ function openPostModal(id){
   modalImg.dataset.id = p.id;
   fullImage(p).then(function(src){ if(modalImg.dataset.id === p.id) modalImg.src = src; });
   document.getElementById('post-modal-body').innerHTML =
-    '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+(p.isInfographic?' · Infographic':'')+'</span>'+
+    '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
     '<h3 style="margin:10px 0 6px">'+esc(p.title)+'</h3>'+
     '<p style="color:var(--muted)">'+esc(p.description||'No description added.')+'</p>'+
     '<div class="card-meta" style="margin-top:14px"><span>👤 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+'</span><span>'+fmtDate(p.date)+'</span></div>';
@@ -393,12 +345,11 @@ document.getElementById('zoom-scrim').addEventListener('click', function(){ this
 var submitCat = null;
 var uploadedImage = null;
 var isAnon = false;
-var isInfographicFlag = false;
 var hasConsent = false;
 var stickers = [];
 var awarded = {};
 var runXP = 0;
-var STEP_XP = 10, LAUNCH_XP = 50, DESC_XP = 15, INFO_XP = 10, GROUP_XP = 10, STICKER_XP = 5, MAX_STICKER_XP = 25, MAX_STICKERS = 10;
+var STEP_XP = 10, LAUNCH_XP = 50, DESC_XP = 15, GROUP_XP = 10, STICKER_XP = 5, MAX_STICKER_XP = 25, MAX_STICKERS = 10;
 var STICKERS = ['⭐','💖','🌸','✨','🐾','🌈','🍓','😎','🎀','🔥','🍀','🫶'];
 
 /* player progress (per browser) */
@@ -416,7 +367,7 @@ var BADGES = [
   {id:'first',  icon:'🍡', name:'First Bite',         desc:'Share your first post'},
   {id:'streak', icon:'🍱', name:'Snack Streak',       desc:'Share 3 posts'},
   {id:'artist', icon:'🎨', name:'Sticker Artist',     desc:'Use 3+ stickers on one photo'},
-  {id:'wizard', icon:'🧙', name:'Infographic Wizard', desc:'Share an infographic'},
+  {id:'squad',  icon:'📣', name:'Team Spirit',        desc:'Tag your group in a photo'},
   {id:'agent',  icon:'🕶️', name:'Secret Agent',       desc:'Post anonymously'},
   {id:'buds',   icon:'💚', name:'Best Buds',          desc:'Poke Mochi 10 times'}
 ];
@@ -835,17 +786,6 @@ var anonToggle = document.getElementById('anon-toggle');
 anonToggle.addEventListener('click', toggleAnon);
 anonToggle.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleAnon(); } });
 
-function toggleInfographic(){
-  isInfographicFlag = !isInfographicFlag;
-  document.getElementById('info-check-box').classList.toggle('on', isInfographicFlag);
-  infoRow.setAttribute('aria-checked', String(isInfographicFlag));
-  SFX.pop();
-  if(isInfographicFlag && !awarded.info){ awarded.info = true; addXP(INFO_XP); say('An infographic! Big brain energy. 🧠'); }
-}
-var infoRow = document.getElementById('infographic-check');
-infoRow.addEventListener('click', toggleInfographic);
-infoRow.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleInfographic(); } });
-
 function toggleConsent(){
   hasConsent = !hasConsent;
   document.getElementById('consent-box').classList.toggle('on', hasConsent);
@@ -899,7 +839,6 @@ document.getElementById('submit-form').addEventListener('submit', function(e){
       anonymous: isAnon,
       group: groupSelect.value,
       image: img.thumb,
-      isInfographic: isInfographicFlag,
       date: new Date().toISOString(),
       status: 'pending'
     }, img.full);
@@ -927,10 +866,10 @@ function finishQuest(stickerCount){
   check(true, 'first');
   check(player.shares >= 3, 'streak');
   check(stickerCount >= 3, 'artist');
-  check(isInfographicFlag, 'wizard');
+  check(!!groupSelect.value, 'squad');
   check(isAnon, 'agent');
 
-  var bonuses = [!!awarded.desc, stickerCount > 0, isInfographicFlag, !!groupSelect.value].filter(Boolean).length;
+  var bonuses = [!!awarded.desc, stickerCount > 0, !!groupSelect.value].filter(Boolean).length;
   var starCount = 1 + Math.min(2, bonuses);
 
   document.getElementById('submit-form').hidden = true;
@@ -1003,7 +942,7 @@ document.getElementById('share-another').addEventListener('click', function(){
   document.getElementById('submit-form').reset();
   document.getElementById('submit-form').hidden = false;
   document.getElementById('success-box').hidden = true;
-  uploadedImage = null; submitCat = null; isAnon = false; isInfographicFlag = false; hasConsent = false;
+  uploadedImage = null; submitCat = null; isAnon = false; hasConsent = false;
   awarded = {}; runXP = 0;
   clearStickers();
   fileInput.value = '';
@@ -1013,7 +952,6 @@ document.getElementById('share-another').addEventListener('click', function(){
   document.getElementById('preview-wrap').hidden = true;
   dropzone.hidden = false;
   anonToggle.classList.remove('on'); anonToggle.setAttribute('aria-checked', 'false');
-  document.getElementById('info-check-box').classList.remove('on'); infoRow.setAttribute('aria-checked', 'false');
   document.getElementById('consent-box').classList.remove('on'); consentRow.setAttribute('aria-checked', 'false');
   renderSubmitCats(); updateMissions();
   setMood('hungry', 1500); say('Round two? I\'m still hungry! 😋');
@@ -1122,7 +1060,7 @@ function openReviewModal(id){
   }
   actionsHTML += '<button class="btn btn-ghost btn-sm" style="margin-top:14px" id="rev-delete">🗑️ Delete forever</button>';
   document.getElementById('review-modal-body').innerHTML =
-    '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+(p.isInfographic?' · Infographic':'')+'</span>'+
+    '<span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
     '<span class="status-pill" style="margin-left:8px; '+({pending:'background:#FBEEDB;color:var(--warn)',approved:'background:var(--green-tint);color:var(--good)',rejected:'background:#FAE4E4;color:var(--bad)'}[p.status])+'">'+p.status+'</span>'+
     '<h3 style="margin:10px 0 6px">'+esc(p.title)+'</h3>'+
     '<p style="color:var(--muted)">'+esc(p.description||'No description added.')+'</p>'+
