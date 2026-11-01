@@ -214,7 +214,7 @@ function route(){
   VIEWS.forEach(function(v){
     document.getElementById('view-'+v).hidden = (v !== hash);
   });
-  document.querySelectorAll('.navlink').forEach(function(a){
+  document.querySelectorAll('.navlink, .tablink').forEach(function(a){
     a.classList.toggle('active', a.dataset.route === hash);
   });
   if(hash === 'show') startShow(); else stopShow();
@@ -986,6 +986,11 @@ dropzone.addEventListener('click', function(){ fileInput.click(); });
 dropzone.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); fileInput.click(); } });
 dropzone.addEventListener('mouseenter', function(){ if(!uploadedImage && mochi.dataset.mood==='idle'){ setMood('hungry', 1500); } });
 fileInput.addEventListener('change', function(){ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+// phones: open the camera directly, or the gallery
+var cameraInput = document.getElementById('camera-input');
+cameraInput.addEventListener('change', function(){ if(cameraInput.files[0]) handleFile(cameraInput.files[0]); cameraInput.value = ''; });
+document.getElementById('btn-camera').addEventListener('click', function(e){ e.stopPropagation(); cameraInput.click(); });
+document.getElementById('btn-gallery').addEventListener('click', function(e){ e.stopPropagation(); fileInput.click(); });
 
 // drop a file anywhere on the quest page
 var dragDepth = 0;

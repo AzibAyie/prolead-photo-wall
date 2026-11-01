@@ -2,7 +2,11 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7FD3FF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
 <title>ProLead Photo Wall</title>
 <meta name="description" content="Share photos from ProLead: Dare to Lead Camp 2026 at SK Kedaik, Muadzam Shah.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +35,14 @@
       <a href="#admin" class="navlink admin" data-route="admin">Admin</a>
     </div>
   </div>
+</nav>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="#home" class="tablink" data-route="home"><span>🏠</span>Home</a>
+  <a href="#explore" class="tablink" data-route="explore"><span>🖼️</span>Photos</a>
+  <a href="#submit" class="tablink tab-share" data-route="submit"><span>📸</span>Share</a>
+  <a href="#groups" class="tablink" data-route="groups"><span>🏁</span>Groups</a>
+  <a href="#show" class="tablink" data-route="show"><span>📺</span>Screen</a>
 </nav>
 
 <main class="container">
@@ -235,9 +247,14 @@
                   <path d="M6 40h80c0 14-16 26-40 26S6 54 6 40z" fill="var(--green-tint)" stroke="var(--green)" stroke-width="3" stroke-linejoin="round"/>
                   <path d="M20 48c6 6 14 9 26 9" stroke="var(--green)" stroke-width="3" stroke-linecap="round" opacity=".5"/>
                 </svg>
-                <div class="dz-title">Drop a photo in Mochi's bowl</div>
-                <div class="hint">or <u>browse your files</u> · or paste with Ctrl+V</div>
+                <div class="dz-title"><span class="desk-only">Drop a photo in Mochi's bowl</span><span class="phone-only">Feed Mochi a photo!</span></div>
+                <div class="hint desk-only">or <u>browse your files</u> · or paste with Ctrl+V</div>
+                <div class="dz-phone phone-only">
+                  <button type="button" class="btn btn-accent" id="btn-camera">📷 Take photo</button>
+                  <button type="button" class="btn btn-primary" id="btn-gallery">🖼️ Gallery</button>
+                </div>
                 <input type="file" id="file-input" accept="image/*" hidden>
+                <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
               </div>
 
               <div class="munch" id="munch" hidden>
