@@ -799,83 +799,93 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
-/* lofi background music: a jazzy lofi beat composed in code (no audio file, no copyright) */
-var music = {on: player.music !== false, playing:false, timer:null, bus:null, nextBar:0, bar:0};
-var BEAT = 60 / 80, EIGHTH = BEAT / 2, SWING = EIGHTH * .3;
-// one entry per bar: [startBeat, beats, bass note, electric-piano voicing] (MIDI) — Fmaj9 | E7 | Am7 | Gm7 C9
+/* background music: a soothing kalimba lofi tune composed in code (no audio file, no copyright) */
+var music = {on: player.music !== false, playing:false, timer:null, bus:null, session:null, nextBar:0, bar:0};
+var BEAT = 60 / 84, EIGHTH = BEAT / 2, SWING = EIGHTH * .18;
+// feel-good loop C → G → Am → F: [bass, soft-piano voicing] as MIDI notes
 var PROG = [
-  [[0, 4, 41, [57,60,64,67]]],
-  [[0, 4, 40, [56,59,62,64]]],
-  [[0, 4, 45, [55,57,60,64]]],
-  [[0, 2, 43, [53,58,62,65]], [2, 2, 36, [52,55,58,62]]]
+  [48, [55,60,64,67]],
+  [43, [55,59,62,67]],
+  [45, [57,60,64,69]],
+  [41, [57,60,65,69]]
 ];
-var MELODY = [ // the hook: eight swung eighth-notes per bar, 0 = rest
-  [76,0,74,72,0,69,72,0], [71,0,68,0,71,74,0,0], [72,0,76,0,79,0,76,74], [74,72,0,70,0,67,0,0],
-  [76,0,74,72,0,69,72,76], [76,0,74,0,71,0,68,0], [69,0,72,76,0,81,0,79], [76,0,74,0,72,0,0,0]
+var MELODY = [ // the kalimba hook, eight eighth-notes per bar (0 = rest); 8 bars = two times round the chords
+  [72,0,76,0,79,0,76,74], [74,0,71,0,67,0,0,0], [69,0,72,0,76,0,74,72], [72,0,69,0,0,0,0,0],
+  [72,0,76,0,79,0,81,79], [76,0,74,0,71,0,74,0], [72,0,69,0,76,0,74,0], [72,0,0,0,0,0,0,0]
 ];
 function midiHz(m){ return 440 * Math.pow(2, (m - 69) / 12); }
-function musicNote(dest, m, t, dur, type, vol, attack){
+// one sine "partial" with a quick attack and a natural fade (every note ends on its own)
+function partial(f, t, vol, attack, decay, hold){
   var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-  o.type = type; o.frequency.value = midiHz(m);
+  o.type = 'sine'; o.frequency.value = f;
   g.gain.setValueAtTime(.0001, t);
   g.gain.exponentialRampToValueAtTime(vol, t + attack);
-  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-  o.connect(g); g.connect(dest);
-  o.start(t); o.stop(t + dur + .05);
+  if(hold){   // settle to a warm hold level, then fade out just before the length ends
+    g.gain.exponentialRampToValueAtTime(vol * hold, t + attack + .45);
+    g.gain.setValueAtTime(vol * hold, t + attack + decay - .15);
+    g.gain.linearRampToValueAtTime(0, t + attack + decay);
+  } else g.gain.exponentialRampToValueAtTime(.0001, t + attack + decay);
+  o.connect(g); g.connect(music.session);
+  o.start(t); o.stop(t + attack + decay + .05);
 }
-// warm electric-piano note: two slightly detuned sines plus a soft octave, through the tremolo bus
-function keyNote(m, t, dur, vol){
-  var g = audioCtx.createGain(), f = midiHz(m);
-  [[f * .998, 1], [f * 1.002, 1], [f * 2, .35], [f * 3, .12]].forEach(function(p){
-    var o = audioCtx.createOscillator(), og = audioCtx.createGain();
-    o.type = 'sine'; o.frequency.value = p[0]; og.gain.value = p[1];
-    o.connect(og); og.connect(g);
-    o.start(t); o.stop(t + dur + .6);
+function kalimba(m, t, vol){
+  var f = midiHz(m);
+  partial(f, t, vol, .004, 1.1);
+  partial(f * 2, t, vol * .22, .003, .35);
+  partial(f * 5.4, t, vol * .05, .002, .12);     // the bright "tine" click
+}
+function pianoChord(notes, t, beats, vol){
+  notes.forEach(function(m, k){
+    var f = midiHz(m), at = t + k * .014;           // gently rolled
+    partial(f * .998, at, vol, .012, BEAT * beats, .4);
+    partial(f * 1.002, at, vol, .012, BEAT * beats, .4);
+    partial(f * 2, at, vol * .2, .01, BEAT * beats * .5);
   });
+}
+function bassNote(m, t, beats, vol){
+  var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'triangle'; o.frequency.value = midiHz(m);
   g.gain.setValueAtTime(.0001, t);
-  g.gain.exponentialRampToValueAtTime(vol, t + .015);
-  g.gain.exponentialRampToValueAtTime(vol * .45, t + .6);
-  g.gain.setTargetAtTime(.0001, t + dur, .15);
-  g.connect(music.bus.keys);
+  g.gain.exponentialRampToValueAtTime(vol, t + .02);
+  g.gain.exponentialRampToValueAtTime(.0001, t + BEAT * beats);
+  o.connect(g); g.connect(music.session);
+  o.start(t); o.stop(t + BEAT * beats + .05);
 }
 function drumHit(kind, t, vol){
-  var b = music.bus, g = audioCtx.createGain();
-  g.connect(b.drums);
+  var g = audioCtx.createGain();
+  g.connect(music.session);
   if(kind === 'kick'){
     var o = audioCtx.createOscillator();
-    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(62, t + .09);
-    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.001, t + .32);
-    o.connect(g); o.start(t); o.stop(t + .35);
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(55, t + .1);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.001, t + .25);
+    o.connect(g); o.start(t); o.stop(t + .28);
     return;
   }
-  var src = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), len = kind === 'snare' ? .2 : .045;
-  src.buffer = b.noise;
-  if(kind === 'snare'){ f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = .7; }
-  else { f.type = 'highpass'; f.frequency.value = 7000; }
-  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.001, t + len);
+  var src = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), len = kind === 'snap' ? .09 : .035;
+  src.buffer = music.bus.noise;
+  if(kind === 'snap'){ f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 1.2; }
+  else { f.type = 'highpass'; f.frequency.value = 6500; }
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .003); g.gain.exponentialRampToValueAtTime(.001, t + len);
   src.connect(f); f.connect(g);
   src.start(t, Math.random() * .5); src.stop(t + len + .02);
 }
 function scheduleBar(t, i){
-  var b = music.bus, mel = MELODY[i % MELODY.length];
-  function at(k){ return t + k*EIGHTH + (k % 2 ? SWING : 0); }   // swung eighths
-  PROG[i % PROG.length].forEach(function(c){
-    var st = t + c[0]*BEAT, len = c[1]*BEAT;
-    c[3].forEach(function(m, k){ keyNote(m, st + k*.012, len * .92, .075); });     // gently strummed chord
-    musicNote(b.bass, c[2] + 12, st, BEAT*1.4, 'triangle', .14, .02);                  // bass
-    if(c[1] === 4) musicNote(b.bass, c[2] + 12, st + BEAT*2.5 + SWING, BEAT*1.2, 'triangle', .1, .02);
-  });
-  if(i >= 2){                                                                       // drums join after a short intro
-    drumHit('kick', at(0), .42); drumHit('kick', at(3), .32);
-    if(i % 2) drumHit('kick', at(5), .2);
-    drumHit('snare', at(2), .3); drumHit('snare', at(6), .3);
-    for(var k=0; k<8; k++) drumHit('hat', at(k), k % 2 ? .05 : .08);
+  // a two-bar intro on Am → F, then the loop starts on C with the melody
+  var chord = PROG[(i + 2) % 4];
+  function at(k){ return t + k*EIGHTH + (k % 2 ? SWING : 0); }
+  pianoChord(chord[1], t, 2, .06);
+  pianoChord(chord[1], t + BEAT*2, 2, .048);
+  bassNote(chord[0] + 12, t, 2.4, .2);
+  bassNote(chord[0] + 12, at(5), 1.3, .13);
+  if(i >= 1){
+    drumHit('kick', at(0), .4); drumHit('kick', at(4), .32);
+    drumHit('snap', at(2), .22); drumHit('snap', at(6), .22);
+    for(var k=0; k<8; k++) drumHit('shaker', at(k), k % 2 ? .035 : .055);
   }
-  if(i >= 4) mel.forEach(function(m, k){                                           // the hook comes in after the intro
+  if(i >= 2) MELODY[(i - 2) % MELODY.length].forEach(function(m, k){
     if(!m) return;
-    musicNote(b.lead, m, at(k), 1.0, 'sine', .17, .008);
-    musicNote(b.lead, m, at(k), .7, 'triangle', .08, .01);
-    musicNote(b.lead, m + 12, at(k), .45, 'sine', .035, .006);
+    kalimba(m, at(k), .25);
+    kalimba(m, at(k) + BEAT * .75, .045);          // one soft echo, no feedback loop
   });
 }
 function musicTick(){
@@ -886,32 +896,13 @@ function musicTick(){
 }
 function buildMusicBus(){
   var c = audioCtx;
-  var master = c.createGain(), comp = c.createDynamicsCompressor(), tape = c.createBiquadFilter();
-  tape.type = 'lowpass'; tape.frequency.value = 6000;                               // soft "old tape" top end
-  tape.connect(comp); comp.connect(master); master.connect(c.destination);
-  master.gain.value = .0001;
-  // electric piano with a slow tremolo wobble
-  var keys = c.createGain(), lfo = c.createOscillator(), depth = c.createGain();
-  keys.gain.value = .85; lfo.frequency.value = 4.2; depth.gain.value = .15;
-  lfo.connect(depth); depth.connect(keys.gain); lfo.start();
-  keys.connect(tape);
-  var bass = c.createGain(); bass.connect(tape);
-  var drums = c.createGain(), drumTone = c.createBiquadFilter();
-  drumTone.type = 'lowpass'; drumTone.frequency.value = 5000; drums.connect(drumTone); drumTone.connect(tape);
-  // melody with a dotted-eighth echo
-  var lead = c.createGain(), delay = c.createDelay(), fb = c.createGain();
-  delay.delayTime.value = BEAT * .75; fb.gain.value = .3;
-  lead.connect(tape); lead.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(tape);
-  // noise for drums, and a looping vinyl crackle
+  var input = c.createGain(), tone = c.createBiquadFilter(), comp = c.createDynamicsCompressor(), master = c.createGain();
+  tone.type = 'lowpass'; tone.frequency.value = 7000;
+  input.connect(tone); tone.connect(comp); comp.connect(master); master.connect(c.destination);
+  master.gain.value = 1;
   var noise = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = noise.getChannelData(0);
   for(var i=0; i<nd.length; i++) nd[i] = Math.random() * 2 - 1;
-  var vinyl = c.createBuffer(1, c.sampleRate * 3, c.sampleRate), vd = vinyl.getChannelData(0);
-  for(var j=0; j<vd.length; j++) vd[j] = (Math.random() * 2 - 1) * .015 + (Math.random() < .0002 ? (Math.random() - .5) * .4 : 0);
-  var crackle = c.createBufferSource(), crackleVol = c.createGain(), crackleTone = c.createBiquadFilter();
-  crackle.buffer = vinyl; crackle.loop = true; crackleVol.gain.value = .25;
-  crackleTone.type = 'bandpass'; crackleTone.frequency.value = 2500; crackleTone.Q.value = .5;
-  crackle.connect(crackleTone); crackleTone.connect(crackleVol); crackleVol.connect(master); crackle.start();
-  return {master:master, keys:keys, bass:bass, drums:drums, lead:lead, noise:noise};
+  return {input:input, master:master, noise:noise};
 }
 // Browsers keep audio muted until the visitor taps. Only count the music as playing once the
 // browser has really unmuted; otherwise stay "waiting" and try again on the next tap.
@@ -933,14 +924,20 @@ function startMusic(){
     renderMusicBtn();
   }, function(){ renderMusicBtn(); });
 }
+// Every start gets its own volume channel ("session"). Stopping fades that channel out and unplugs it,
+// so notes that were already queued can never play on top of the next start.
 function beginMusic(){
   if(music.playing) return;
   try{
     if(!music.bus) music.bus = buildMusicBus();
-    music.bus.master.gain.cancelScheduledValues(audioCtx.currentTime);
-    music.bus.master.gain.setTargetAtTime(1, audioCtx.currentTime, 1.5);   // gentle fade in
-    music.nextBar = audioCtx.currentTime + .1;
+    var s = audioCtx.createGain(), now = audioCtx.currentTime;
+    s.gain.setValueAtTime(0, now);
+    s.gain.linearRampToValueAtTime(1, now + 1.2);                            // gentle fade in
+    s.connect(music.bus.input);
+    music.session = s;
+    music.nextBar = now + .1;
     music.bar = 0;
+    clearInterval(music.timer);
     music.timer = setInterval(musicTick, 250);
     musicTick();
     music.playing = true;
@@ -950,7 +947,12 @@ function beginMusic(){
 function stopMusic(){
   if(!music.playing) return;
   clearInterval(music.timer);
-  music.bus.master.gain.setTargetAtTime(.0001, audioCtx.currentTime, .3);   // gentle fade out
+  var s = music.session, now = audioCtx.currentTime;
+  s.gain.cancelScheduledValues(now);
+  s.gain.setValueAtTime(Math.max(s.gain.value, .0001), now);
+  s.gain.exponentialRampToValueAtTime(.0001, now + .3);                     // gentle fade out
+  setTimeout(function(){ s.disconnect(); }, 400);                           // queued notes now go nowhere
+  music.session = null;
   music.playing = false;
   renderMusicBtn();
 }
@@ -985,7 +987,9 @@ document.getElementById('show-music').addEventListener('click', onMusicBtn);
   }, {passive:true});
 });
 document.addEventListener('visibilitychange', function(){
-  if(document.hidden) stopMusic(); else if(music.unlocked) startMusic();
+  if(!audioCtx || !music.playing) return;
+  if(document.hidden) audioCtx.suspend().catch(function(){});
+  else audioCtx.resume().catch(function(){});
 });
 renderMusicBtn();
 
