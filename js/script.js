@@ -542,6 +542,9 @@ document.addEventListener('click', function(e){
 /* ---------- daily photo challenges ---------- */
 var CHALLENGE_XP = 20;
 var CHALLENGES = [
+  {id:'briefing',   day:'boot', e:'📋', t:'Team briefing selfie'},
+  {id:'setup',      day:'boot', e:'🛠️', t:'Setting up the venue'},
+  {id:'rehearsal',  day:'boot', e:'🎬', t:'Rehearsal behind the scenes'},
   {id:'roadtrip',   day:25, e:'🚌', t:'Road trip selfie with your squad'},
   {id:'newhome',    day:25, e:'🏠', t:'Our home for 3 days'},
   {id:'firstsmile', day:25, e:'😁', t:'First big smile of camp'},
@@ -554,19 +557,20 @@ var CHALLENGES = [
   {id:'goodbye',    day:27, e:'🤗', t:'Group goodbye photo'}
 ];
 var CAMP_DAYS = [25, 26, 27];
+var SLOTS = [{key:'boot', label:'Bootcamp'}].concat(CAMP_DAYS.map(function(d, i){ return {key:d, label:'Day ' + (i + 1)}; }));
 function challenge(id){ return CHALLENGES.find(function(c){ return c.id === id; }); }
 function campToday(){
   var n = new Date();
   return (n.getFullYear() === 2026 && n.getMonth() === 10 && CAMP_DAYS.indexOf(n.getDate()) !== -1) ? n.getDate() : null;
 }
-var challengeDay = campToday() || 25, pendingChallenge = null;
+var challengeDay = campToday() || 'boot', pendingChallenge = null;
 function renderChallenges(){
   document.querySelectorAll('.challenge-box').forEach(renderChallengeBox);
 }
 function renderChallengeBox(el){
   var today = campToday(), done = player.challenges || [];
-  var tabs = CAMP_DAYS.map(function(d, i){
-    return '<button type="button" class="day-tab'+(d===challengeDay?' active':'')+'" data-day="'+d+'">Day '+(i+1)+(d===today?' · Today':'')+'</button>';
+  var tabs = SLOTS.map(function(s){
+    return '<button type="button" class="day-tab'+(s.key===challengeDay?' active':'')+(s.key==='boot'?' boot':'')+'" data-day="'+s.key+'">'+s.label+(s.key===today?' · Today':'')+'</button>';
   }).join('');
   var cards = CHALLENGES.filter(function(c){ return c.day === challengeDay; }).map(function(c){
     var shots = posts.filter(function(p){ return p.status==='approved' && p.challenge===c.id; });
@@ -582,7 +586,7 @@ function renderChallengeBox(el){
   }).join('');
   el.innerHTML = '<div class="day-tabs">'+tabs+'</div><div class="challenge-grid">'+cards+'</div>';
   el.querySelectorAll('.day-tab').forEach(function(t){
-    t.onclick = function(){ challengeDay = +t.dataset.day; SFX.pop(); renderChallenges(); };
+    t.onclick = function(){ challengeDay = t.dataset.day === 'boot' ? 'boot' : +t.dataset.day; SFX.pop(); renderChallenges(); };
   });
   el.querySelectorAll('[data-take]').forEach(function(b){
     b.onclick = function(){ pendingChallenge = b.dataset.take; location.hash = '#submit'; };
@@ -1458,9 +1462,9 @@ groupSelect.addEventListener('change', function(){
 });
 
 var challengeSelect = document.getElementById('f-challenge');
-CAMP_DAYS.forEach(function(d, i){
-  challengeSelect.insertAdjacentHTML('beforeend', '<optgroup label="Day '+(i+1)+'">'+
-    CHALLENGES.filter(function(c){ return c.day === d; }).map(function(c){
+SLOTS.forEach(function(s){
+  challengeSelect.insertAdjacentHTML('beforeend', '<optgroup label="'+s.label+'">'+
+    CHALLENGES.filter(function(c){ return c.day === s.key; }).map(function(c){
       return '<option value="'+c.id+'">'+c.e+' '+c.t+'</option>';
     }).join('')+'</optgroup>');
 });
