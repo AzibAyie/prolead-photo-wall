@@ -1033,7 +1033,7 @@ body.show-mode .music-btn:hover{opacity:1}
 .pm-buddy{position:fixed; right:12px; bottom:10px; z-index:55; background:none; border:none; padding:0; cursor:pointer;
   -webkit-tap-highlight-color:transparent; perspective:420px}
 .pm-3d{display:block; transform-style:preserve-3d}
-.pm-svg{display:block; overflow:visible; filter:drop-shadow(0 6px 8px rgba(80,60,110,.18))}
+.pm-svg{display:block; overflow:visible; filter:drop-shadow(0 3px 0 rgba(42,34,48,.18))}
 .pm-all{transform-origin:70px 190px; animation:pm-breathe 1.6s ease-in-out infinite}
 .pm-head{transform-origin:70px 112px}
 .pm-shadow{transform-origin:70px 192px}
