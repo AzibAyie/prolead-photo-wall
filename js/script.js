@@ -810,6 +810,16 @@ document.addEventListener('keydown', function(e){
   wakeControls();
 });
 
+/* ---------- typing on phones ---------- */
+// While a text box is focused (keyboard open), hide the bottom tab bar so it can't jump up over what you're typing.
+function isTypingField(el){
+  return el && (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && /^(text|email|password|search)$/.test(el.type)));
+}
+document.addEventListener('focusin', function(e){ if(isTypingField(e.target)) document.body.classList.add('typing'); });
+document.addEventListener('focusout', function(){
+  setTimeout(function(){ if(!isTypingField(document.activeElement)) document.body.classList.remove('typing'); }, 100);
+});
+
 /* ---------- card click -> modal ---------- */
 function bindCards(){
   document.querySelectorAll('.card[data-id]').forEach(function(card){
