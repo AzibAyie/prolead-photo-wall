@@ -607,7 +607,7 @@ var SCHEDULE = [
     ['14:00', '2:00 PM', 'Registration preparation', [], ''],
     ['14:30', '2:30 PM', 'Participant arrival and registration', [], 'School Assembly Point'],
     ['15:30', '3:30 PM', 'Programme Organising Committee briefing', [], 'Hall'],
-    ['15:45', '3:45 PM', 'Group formation and ice-breaking session', ['Group formation (10 min)', 'Slot 1: Ice-Breaking Activity – “Crisis Identity” (40 min)', 'Group cheer (15–20 min)'], 'Hall'],
+    ['15:45', '3:45 PM', 'Slot 1: Ice-Breaking Activity – “Crisis Identity”', ['Group formation (10 min)', 'Ice-breaking activity “Crisis Identity” (40 min)', 'Group cheer (15–20 min)'], 'Hall'],
     ['16:45', '4:45 PM', 'Asar prayer', [], 'Surau / Hall'],
     ['17:30', '5:30 PM', 'Personal preparation', [], ''],
     ['18:30', '6:30 PM', 'Dinner', [], 'School Canteen'],
