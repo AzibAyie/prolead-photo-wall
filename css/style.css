@@ -970,3 +970,5 @@ body.show-mode .music-btn:hover{opacity:1}
 .dropzone .dz-phone .btn .ico{margin:0}
 .download-btn{display:inline-flex; align-items:center; gap:8px; margin-top:16px}
 .download-btn[disabled]{opacity:.6}
+.react-row.chosen .react-btn:not(.on){opacity:.55}
+.react-row.chosen .react-btn:not(.on):hover{opacity:1}

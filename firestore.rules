@@ -46,29 +46,45 @@ service cloud.firestore {
       return getAfter(/databases/$(database)/documents/limits/$(request.auth.uid)).data.lastPost == request.time;
     }
 
-    function step(a, b) {
-      return b == a || b == a + 1 || (b == a - 1 && b >= 0);
+    // ---- reactions: ONE per person per photo ----
+    // Each person's choice is kept in /votes/{postId}_{uid}. The counts on the photo may only change
+    // to match that vote: +1 when it's added, -1 when it's removed, or -1/+1 when it's switched.
+    function votePath(postId) {
+      return /databases/$(database)/documents/votes/$(postId + '_' + request.auth.uid);
     }
-
-    // add or remove ONE emoji reaction on an approved photo, nothing else
-    function validReaction() {
-      let before = resource.data.reactions;
-      let after = request.resource.data.reactions;
+    function postPath(postId) {
+      return /databases/$(database)/documents/posts/$(postId);
+    }
+    function countsMatch(before, after, add, sub) {
+      return after.keys().hasOnly(['heart','laugh','fire','crown'])
+        && after.keys().hasAll(['heart','laugh','fire','crown'])
+        && after.heart == before.heart + (add == 'heart' ? 1 : 0) - (sub == 'heart' ? 1 : 0)
+        && after.laugh == before.laugh + (add == 'laugh' ? 1 : 0) - (sub == 'laugh' ? 1 : 0)
+        && after.fire  == before.fire  + (add == 'fire'  ? 1 : 0) - (sub == 'fire'  ? 1 : 0)
+        && after.crown == before.crown + (add == 'crown' ? 1 : 0) - (sub == 'crown' ? 1 : 0)
+        && after.heart >= 0 && after.laugh >= 0 && after.fire >= 0 && after.crown >= 0;
+    }
+    function validReaction(postId) {
+      let had = exists(votePath(postId));
+      let has = existsAfter(votePath(postId));
+      let oldR = had ? get(votePath(postId)).data.r : '';
+      let newR = has ? getAfter(votePath(postId)).data.r : '';
       return signedIn()
         && resource.data.status == 'approved'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
-        && after.keys().hasOnly(['heart','laugh','fire','crown'])
-        && after.keys().hasAll(['heart','laugh','fire','crown'])
-        && after.diff(before).affectedKeys().size() == 1
-        && step(before.heart, after.heart) && step(before.laugh, after.laugh)
-        && step(before.fire, after.fire) && step(before.crown, after.crown);
+        && oldR != newR
+        && countsMatch(resource.data.reactions, request.resource.data.reactions, newR, oldR);
+    }
+    // the matching count change on the photo must happen in the same save
+    function countMoved(postId, r, by) {
+      return getAfter(postPath(postId)).data.reactions[r] == get(postPath(postId)).data.reactions[r] + by;
     }
 
     // photo info + small thumbnail
     match /posts/{id} {
       allow read: if resource.data.status == 'approved' || isAdmin();
       allow create: if signedIn() && validNewPost(request.resource.data) && stampedNow();
-      allow update: if isAdmin() || validReaction();
+      allow update: if isAdmin() || validReaction(id);
       allow delete: if isAdmin();
     }
 
@@ -82,6 +98,27 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/posts/$(id)).data.status == 'pending'
         && getAfter(/databases/$(database)/documents/posts/$(id)).data.uid == request.auth.uid;
       allow delete: if isAdmin();
+    }
+
+    // each person's single reaction on a photo (id = postId_uid)
+    match /votes/{voteId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['post','uid','r'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.post is string
+        && voteId == request.resource.data.post + '_' + request.auth.uid
+        && request.resource.data.r in ['heart','laugh','fire','crown']
+        && countMoved(request.resource.data.post, request.resource.data.r, 1);
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['r'])
+        && request.resource.data.r in ['heart','laugh','fire','crown']
+        && countMoved(resource.data.post, request.resource.data.r, 1)
+        && countMoved(resource.data.post, resource.data.r, -1);
+      allow delete: if isAdmin() || (signedIn()
+        && resource.data.uid == request.auth.uid
+        && countMoved(resource.data.post, resource.data.r, -1));
     }
 
     // one upload every 30 seconds per visitor

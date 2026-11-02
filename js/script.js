@@ -161,11 +161,15 @@ function subscribePosts(){
   });
 }
 if(cloud){
-  // Sign-ins only last until the tab is closed (safer on shared computers), and every visitor gets an
-  // invisible anonymous account so the database can tell visitors apart and limit how fast they post.
-  cloud.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(function(){});
+  // Every visitor gets an invisible anonymous account, remembered on their device, so the database can
+  // tell visitors apart: one reaction per photo, and a limit on how fast they post.
+  // Admin sign-ins only last until the tab is closed (safer on shared computers).
   cloud.auth.onAuthStateChanged(function(user){
-    if(!user){ cloud.auth.signInAnonymously().catch(function(e){ console.error(e); }); }
+    if(!user){
+      cloud.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(function(){ return cloud.auth.signInAnonymously(); })
+        .catch(function(e){ console.error(e); });
+    }
     isAdmin = !!user && !user.isAnonymous && ADMIN_EMAILS.indexOf(String(user.email || '').toLowerCase()) !== -1;
     if(user && !user.isAnonymous && !isAdmin){ cloud.auth.signOut(); toast('That account is not an admin', '🚫'); }
     subscribePosts();
@@ -244,7 +248,14 @@ function deletePost(p){
   var batch = cloud.db.batch();
   batch.delete(cloud.db.collection('posts').doc(p.id));
   batch.delete(cloud.db.collection('images').doc(p.id));
-  return batch.commit();
+  return batch.commit().then(function(){
+    // tidy up the reaction records for this photo (not critical if it fails)
+    return cloud.db.collection('votes').where('post', '==', p.id).get().then(function(snap){
+      var b = cloud.db.batch();
+      snap.docs.forEach(function(d){ b.delete(d.ref); });
+      return snap.size ? b.commit() : null;
+    }).catch(function(){});
+  });
 }
 // cards use the small thumbnail; the full photo is fetched when opened
 var fullCache = {};
@@ -418,11 +429,17 @@ function renderExploreGrid(){
 }
 
 /* ---------- reactions ---------- */
+// each person gets ONE reaction per photo (tap another emoji to switch, tap yours again to remove)
+function myReaction(id){
+  var m = player.reacted && player.reacted[id];
+  if(Array.isArray(m)) m = m[0];   // older saves kept a list
+  return REACTS.some(function(x){ return x.k === m; }) ? m : '';
+}
 function reactRowHTML(p, big){
   if(p.status !== 'approved') return '';
-  var r = reactionsOf(p), mine = (player.reacted && player.reacted[p.id]) || [];
-  return '<div class="react-row'+(big?' big':'')+'" data-react-id="'+escAttr(p.id)+'">'+REACTS.map(function(x){
-    return '<button type="button" class="react-btn'+(mine.indexOf(x.k)!==-1?' on':'')+'" data-r="'+x.k+'" aria-label="React '+x.e+'">'+x.e+' <b>'+(r[x.k]||0)+'</b></button>';
+  var r = reactionsOf(p), mine = myReaction(p.id);
+  return '<div class="react-row'+(big?' big':'')+(mine?' chosen':'')+'" data-react-id="'+escAttr(p.id)+'">'+REACTS.map(function(x){
+    return '<button type="button" class="react-btn'+(mine===x.k?' on':'')+'" data-r="'+x.k+'" aria-label="React '+x.e+'">'+x.e+' <b>'+(r[x.k]||0)+'</b></button>';
   }).join('')+'</div>';
 }
 function reactSummary(p){
@@ -438,10 +455,11 @@ function patchReactions(){
   document.querySelectorAll('[data-react-id]').forEach(function(row){
     var p = posts.find(function(x){ return x.id === row.dataset.reactId; });
     if(!p) return;
-    var r = reactionsOf(p), mine = (player.reacted && player.reacted[p.id]) || [];
+    var r = reactionsOf(p), mine = myReaction(p.id);
+    row.classList.toggle('chosen', !!mine);
     row.querySelectorAll('.react-btn').forEach(function(b){
       b.querySelector('b').textContent = r[b.dataset.r] || 0;
-      b.classList.toggle('on', mine.indexOf(b.dataset.r) !== -1);
+      b.classList.toggle('on', mine === b.dataset.r);
     });
   });
   if(showActive()) renderShowCaption();
@@ -459,29 +477,60 @@ function burstAt(x, y, emoji){
     setTimeout(function(e){ e.remove(); }.bind(null, el), 900);
   }
 }
+var reactBusy = {};
+function setMyReaction(id, k){
+  player.reacted = player.reacted || {};
+  if(k) player.reacted[id] = k; else delete player.reacted[id];
+  savePlayer();
+}
 function react(id, k, x, y){
   var p = posts.find(function(q){ return q.id === id; });
-  if(!p || p.status !== 'approved') return;
-  player.reacted = player.reacted || {};
-  var mine = player.reacted[id] || [];
-  var on = mine.indexOf(k) === -1;
-  var delta = on ? 1 : -1;
-  player.reacted[id] = on ? mine.concat(k) : mine.filter(function(m){ return m !== k; });
-  if(on) player.reactCount = (player.reactCount || 0) + 1;
-  savePlayer();
+  if(!p || p.status !== 'approved' || reactBusy[id]) return;
+  var old = myReaction(id);
+  var next = old === k ? '' : k;            // same emoji again = take it back; another emoji = switch
+  setMyReaction(id, next);
   p.reactions = Object.assign({heart:0, laugh:0, fire:0, crown:0}, p.reactions);
-  p.reactions[k] = Math.max(0, (p.reactions[k] || 0) + delta);
+  if(old) p.reactions[old] = Math.max(0, (p.reactions[old] || 0) - 1);
+  if(next) p.reactions[next] = (p.reactions[next] || 0) + 1;
   patchReactions();
-  if(on){
-    var e = REACTS.find(function(r){ return r.k === k; }).e;
+  if(next){
+    var e = REACTS.find(function(r){ return r.k === next; }).e;
     burstAt(x, y, e); SFX.pop();
     if(showActive()) showReactionBurst(e, 1);
-    if(player.reactCount >= 10){ var b = grantBadge('superfan'); if(b){ toast('Badge unlocked: '+b.name, b.icon); SFX.star(); } }
+    if(!old){
+      player.reactCount = (player.reactCount || 0) + 1; savePlayer();
+      if(player.reactCount >= 10){ var b = grantBadge('superfan'); if(b){ toast('Badge unlocked: '+b.name, b.icon); SFX.star(); } }
+    }
   }
-  if(cloud){
-    var u = {}; u['reactions.' + k] = firebase.firestore.FieldValue.increment(delta);
-    cloud.db.collection('posts').doc(id).update(u).catch(function(){ toast('Reaction didn\'t send. Check your internet.', '⚠️'); });
-  } else save();
+  if(!cloud){ save(); return; }
+  // The database keeps one "vote" per person per photo and only accepts count changes that match it.
+  var user = cloud.auth.currentUser;
+  if(!user){ toast('Still connecting… try again in a moment.', '⏳'); syncMyReaction(p); return; }
+  var inc = firebase.firestore.FieldValue.increment, u = {};
+  if(old) u['reactions.' + old] = inc(-1);
+  if(next) u['reactions.' + next] = inc(1);
+  var voteRef = cloud.db.collection('votes').doc(id + '_' + user.uid), batch = cloud.db.batch();
+  if(!old) batch.set(voteRef, {post:id, uid:user.uid, r:next});
+  else if(!next) batch.delete(voteRef);
+  else batch.update(voteRef, {r:next});
+  batch.update(cloud.db.collection('posts').doc(id), u);
+  reactBusy[id] = true;
+  batch.commit().catch(function(){
+    // undo what we showed, then ask the database what this person's reaction really is
+    if(next) p.reactions[next] = Math.max(0, (p.reactions[next] || 0) - 1);
+    if(old) p.reactions[old] = (p.reactions[old] || 0) + 1;
+    setMyReaction(id, old); patchReactions();
+    toast('Reaction didn\'t go through. Please try again.', '⚠️');
+    syncMyReaction(p);
+  }).then(function(){ reactBusy[id] = false; });
+}
+// make sure this device shows the reaction the database actually has for this person
+function syncMyReaction(p){
+  if(!cloud || !cloud.auth.currentUser || p.status !== 'approved') return;
+  cloud.db.collection('votes').doc(p.id + '_' + cloud.auth.currentUser.uid).get().then(function(d){
+    var r = d.exists ? d.data().r : '';
+    if(r !== myReaction(p.id)){ setMyReaction(p.id, r); patchReactions(); }
+  }).catch(function(){});
 }
 document.addEventListener('click', function(e){
   var b = e.target.closest && e.target.closest('.react-btn');
@@ -709,6 +758,7 @@ function openPostModal(id){
   modalImg.alt = p.title;
   modalImg.dataset.id = p.id;
   fullImage(p).then(function(src){ if(modalImg.dataset.id === p.id) modalImg.src = src; });
+  syncMyReaction(p);
   var ch = p.challenge && challenge(p.challenge);
   document.getElementById('post-modal-body').innerHTML =
     '<div class="pill-row"><span class="cat-pill" style="background:'+c.bg+'; color:'+c.color+'">'+c.name+'</span>'+
@@ -1617,7 +1667,10 @@ document.getElementById('admin-login').addEventListener('click', function(){
   if(cloud){
     var btn = this;
     btn.disabled = true;
-    cloud.auth.signInWithEmailAndPassword(document.getElementById('admin-email').value.trim(), val).then(function(){
+    var email = document.getElementById('admin-email').value.trim();
+    cloud.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function(){
+      return cloud.auth.signInWithEmailAndPassword(email, val);
+    }).then(function(){
       toast('Welcome back, moderator', '👋');
       document.getElementById('admin-pw').value = '';
     }).catch(function(){
