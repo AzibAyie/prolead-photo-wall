@@ -549,11 +549,9 @@ var CHALLENGES = [
   {id:'newfriend',  day:26, e:'🤝', t:'Photo with a new friend'},
   {id:'debateface', day:26, e:'🎤', t:'Most dramatic debate face'},
   {id:'checkpoint', day:26, e:'🚩', t:'QuestRace checkpoint victory'},
-  {id:'costume',    day:26, e:'🎭', t:'Best Cultural Night costume'},
   {id:'yellow',     day:27, e:'💛', t:'Find something yellow'},
   {id:'certificate',day:27, e:'📜', t:'Certificate proud pose'},
-  {id:'goodbye',    day:27, e:'🤗', t:'Group goodbye photo'},
-  {id:'thanks',     day:27, e:'🙏', t:'Say thanks to a teacher'}
+  {id:'goodbye',    day:27, e:'🤗', t:'Group goodbye photo'}
 ];
 var CAMP_DAYS = [25, 26, 27];
 function challenge(id){ return CHALLENGES.find(function(c){ return c.id === id; }); }
