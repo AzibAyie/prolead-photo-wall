@@ -3,7 +3,7 @@
   "hosting": {
     "site": "proleadcamp",
     "public": ".",
-    "ignore": ["firebase.json", "firestore.rules", "**/.*", "**/node_modules/**"],
+    "ignore": ["firebase.json", "firestore.rules", ".git", ".git/**", ".firebase", ".firebase/**", "**/.*", "**/node_modules/**"],
     "headers": [
       { "source": "**", "headers": [
         { "key": "X-Frame-Options", "value": "DENY" },
