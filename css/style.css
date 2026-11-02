@@ -1018,3 +1018,5 @@ body.show-mode .music-btn:hover{opacity:1}
 .duty-card td:last-child{font-weight:800}
 .duty-card thead + tbody td{width:50%}
 .duty-card thead + tbody td, .duty-card thead + tbody td:first-child{font-weight:700; color:var(--outline)}
+.duty-card.single td, .duty-card.single td:first-child{font-weight:800; color:var(--outline)}
+.duty-card .tbc{font-weight:600; color:var(--muted); font-style:italic}
