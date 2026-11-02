@@ -968,3 +968,5 @@ body.show-mode .music-btn:hover{opacity:1}
 .rev-more{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
 .dz-phone .btn, :root .dz-phone .btn{display:flex!important; align-items:center; justify-content:center!important; gap:10px}
 .dropzone .dz-phone .btn .ico{margin:0}
+.download-btn{display:inline-flex; align-items:center; gap:8px; margin-top:16px}
+.download-btn[disabled]{opacity:.6}

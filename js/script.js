@@ -667,6 +667,39 @@ function bindCards(){
     card.addEventListener('keydown', function(e){ if(e.key==='Enter') openPostModal(card.dataset.id); });
   });
 }
+/* ---------- download / save a photo ---------- */
+var DOWNLOAD_ICON = '<svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0l-5-5m5 5l5-5"/><path d="M4 20h16"/></svg>';
+function photoFileName(p){
+  var slug = String(p.title || 'photo').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'photo';
+  return 'ProLead-' + slug + '.jpg';
+}
+// turn the full-size photo into a file (data: photos are decoded here, since the page isn't allowed to fetch data: URLs)
+function photoBlob(src){
+  if(src.indexOf('data:') === 0){
+    var bin = atob(src.slice(src.indexOf(',') + 1)), bytes = new Uint8Array(bin.length);
+    for(var i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return Promise.resolve(new Blob([bytes], {type: src.slice(5, src.indexOf(';')) || 'image/jpeg'}));
+  }
+  return fetch(src).then(function(r){ return r.blob(); });
+}
+function downloadPhoto(p, btn){
+  btn.disabled = true;
+  fullImage(p).then(function(src){ return photoBlob(src); }).then(function(blob){
+    var name = photoFileName(p), file = null;
+    try{ file = new File([blob], name, {type: 'image/jpeg'}); }catch(e){}
+    // phones (especially iPhone): the share sheet has "Save Image" / "Save to Photos"
+    if(file && navigator.canShare && navigator.canShare({files:[file]}) && (navigator.maxTouchPoints || 0) > 0){
+      return navigator.share({files:[file], title: p.title}).catch(function(e){ if(e && e.name !== 'AbortError') throw e; });
+    }
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    toast('Photo saved to your downloads', '📥');
+  }).catch(function(){
+    toast('Couldn\'t download the photo. Please try again.', '⚠️');
+  }).then(function(){ btn.disabled = false; });
+}
+
 function openPostModal(id){
   var p = posts.find(function(x){return x.id===id;});
   if(!p) return;
@@ -684,7 +717,9 @@ function openPostModal(id){
     '<p style="color:var(--muted)">'+esc(p.description||'No description added.')+'</p>'+
     '<div class="card-meta" style="margin-top:14px"><span>👤 '+esc(p.anonymous?'Anonymous':p.displayName)+(p.group?' · 👥 '+esc(groupLabel(p)):'')+'</span><span>'+fmtDate(p.date)+'</span></div>'+
     reactRowHTML(p, true)+
+    '<button type="button" class="btn btn-primary btn-sm download-btn" id="download-btn">'+DOWNLOAD_ICON+'Download photo</button>'+
     (p.status === 'approved' ? '<div class="report-area" id="report-area"><button type="button" class="report-link" id="report-btn">Report this photo</button></div>' : '');
+  document.getElementById('download-btn').onclick = function(){ downloadPhoto(p, this); };
   var reportBtn = document.getElementById('report-btn');
   if(reportBtn) reportBtn.onclick = function(){
     var area = document.getElementById('report-area');
