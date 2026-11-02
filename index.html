@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261103i">
+<link rel="stylesheet" href="css/style.css?v=20261103j">
 </head>
 <body>
 <div class="blob-field">
@@ -31,6 +31,7 @@
     <div class="navlinks" id="navlinks">
       <a href="#home" class="navlink" data-route="home">Home</a>
       <a href="#explore" class="navlink" data-route="explore">Explore</a>
+      <a href="#schedule" class="navlink" data-route="schedule">Schedule</a>
       <a href="#challenges" class="navlink" data-route="challenges">Challenges</a>
       <a href="#submit" class="navlink" data-route="submit">Share</a>
       <a href="#show" class="navlink show-link" data-route="show">Big Screen</a>
@@ -47,7 +48,7 @@
   <a href="#explore" class="tablink" data-route="explore"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>Photos</a>
   <a href="#submit" class="tablink tab-share" data-route="submit"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Share</a>
   <a href="#challenges" class="tablink" data-route="challenges"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>Challenges</a>
-  <a href="#show" class="tablink" data-route="show"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Screen</a>
+  <a href="#schedule" class="tablink" data-route="schedule"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M14 14h3"/></svg>Schedule</a>
 </nav>
 
 <main class="container">
@@ -100,6 +101,16 @@
       <div class="challenge-box"></div>
     </div>
 
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="view" id="view-schedule" hidden>
+    <div class="section">
+      <span class="eyebrow">Programme tentative</span>
+      <h2 style="margin-top:6px">Camp Schedule</h2>
+      <p class="hint" style="margin-bottom:18px">What's happening and where, for all three days. During the camp, the current slot is marked <b>Now</b>.</p>
+      <div id="schedule-box"></div>
+    </div>
   </section>
 
   <!-- CHALLENGES -->
@@ -395,7 +406,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous"></script>
-<script src="js/firebase-config.js?v=20261103i"></script>
-<script src="js/script.js?v=20261103i"></script>
+<script src="js/firebase-config.js?v=20261103j"></script>
+<script src="js/script.js?v=20261103j"></script>
 </body>
 </html>

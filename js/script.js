@@ -307,7 +307,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','challenges','submit','admin','show'];
+var VIEWS = ['home','explore','schedule','challenges','submit','admin','show'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
@@ -331,6 +331,7 @@ function renderCurrent(){
   if(hash === 'home') renderHome();
   if(hash === 'explore') renderExplore();
   if(hash === 'challenges') renderChallenges();
+  if(hash === 'schedule') renderSchedule();
   if(hash === 'admin') renderAdmin();
   if(hash === 'show'){
     show.list = showList();
@@ -594,6 +595,105 @@ function renderChallengeBox(el){
     img.onclick = function(){ openPostModal(img.dataset.open); };
   });
 }
+
+/* ---------- camp schedule (programme tentative) ---------- */
+// [start 'HH:MM' (24h), time label, activity, details, venue / notes]
+var SCHEDULE = [
+  {day:25, label:'Day 1', date:'Wed, 25 November 2026', items:[
+    ['07:00', '7:00 AM', 'Students gather at futsal court', [], 'Futsal Court'],
+    ['07:30', '7:30 AM', 'Morning preparation and move to SK Kedaik', [], ''],
+    ['12:00', '12:00 – 12:30 PM', 'Arrival at SK Kedaik and unload belongings', [], 'School Canteen & Surau'],
+    ['12:30', '12:30 PM', 'Lunch and Zuhur prayer', [], ''],
+    ['14:00', '2:00 PM', 'Registration preparation', [], ''],
+    ['14:30', '2:30 PM', 'Participant arrival and registration', [], 'School Assembly Point'],
+    ['15:30', '3:30 PM', 'Programme Organising Committee briefing', [], 'Hall'],
+    ['15:45', '3:45 PM', 'Group formation and ice-breaking session', ['Group formation (10 min)', 'Slot 1: Ice-Breaking Activity – “Crisis Identity” (40 min)', 'Group cheer (15–20 min)'], 'Hall'],
+    ['16:45', '4:45 PM', 'Asar prayer', [], 'Surau / Hall'],
+    ['17:30', '5:30 PM', 'Personal preparation', [], ''],
+    ['18:30', '6:30 PM', 'Dinner', [], 'School Canteen'],
+    ['19:00', '7:00 PM', 'Maghrib prayer / Tazkirah / Isha’ prayer / Human Formation', ['Non-Muslim participants may use this time for reflection or discussion related to the upcoming activities'], 'Surau / Hall'],
+    ['20:30', '8:30 PM', 'Integrity sharing session', [], 'By assigned lecturer'],
+    ['21:00', '9:00 PM', 'Slot 2: Leadership Activity – “Parliamentary Debate”', [], 'Hall'],
+    ['22:00', '10:00 PM', 'Cultural Night briefing and rehearsal', [], 'Hall'],
+    ['22:30', '10:30 PM', 'Supper', [], ''],
+    ['23:00', '11:00 PM', 'Sleep', [], '']
+  ]},
+  {day:26, label:'Day 2', date:'Thu, 26 November 2026', items:[
+    ['04:30', '4:30 AM', 'Preparation for Qiamullail', [], ''],
+    ['05:00', '5:00 AM', 'Qiam and Subuh prayer', [], 'Surau'],
+    ['06:00', '6:00 AM', 'Preparation for assembly', [], ''],
+    ['07:30', '7:30 AM', 'Assembly: National Anthem, exercise', [], 'Dataran'],
+    ['08:00', '8:00 AM', 'Breakfast', [], 'Canteen'],
+    ['08:30', '8:30 AM', 'Slot 3: Outdoor Activity (QuestRace) – 4 checkpoints', ['Activities at each checkpoint are decided by the facilitators', 'Safety briefing before the activity; first-aid kit available', 'Water breaks throughout', 'If it rains, the activity is postponed or moved indoors', 'Facilitators supervise participants throughout'], ''],
+    ['10:30', '10:30 AM', 'Morning tea break', [], 'Canteen'],
+    ['10:45', '10:45 AM', 'Slot 4: Integrity and anti-corruption session', [], 'By assigned facilitator'],
+    ['12:00', '12:00 PM', 'Lunch', [], 'Canteen'],
+    ['13:30', '1:30 PM', 'Zuhur prayer', [], 'Surau'],
+    ['14:30', '2:30 PM', 'Slot 5: Sharing Session (caught in the act)', [], 'Hall · by assigned facilitators'],
+    ['15:00', '3:00 PM', 'Slot 6: Siput Menyanyi', [], 'Hall'],
+    ['16:00', '4:00 PM', 'Slot 7: LDK (Siapa Saya?)', [], 'Hall'],
+    ['16:30', '4:30 PM', 'Tea break and Asar prayer', [], 'Canteen & Surau'],
+    ['17:20', '5:20 PM', 'Cultural Night practice and rehearsals', [], 'Hall / Assembly Point'],
+    ['18:20', '6:20 PM', 'Personal preparation and dinner', [], ''],
+    ['19:30', '7:30 PM', 'Maghrib prayer / Tazkirah / Isha’ prayer', [], 'Surau'],
+    ['21:00', '9:00 PM', 'Cultural Night 🎭', [], 'Hall'],
+    ['22:30', '10:30 PM', 'Supper', [], 'Canteen'],
+    ['23:00', '11:00 PM', 'Sleep', [], '']
+  ]},
+  {day:27, label:'Day 3', date:'Fri, 27 November 2026', items:[
+    ['06:00', '6:00 AM', 'Subuh prayer and Value Formation', [], 'Surau / Hall'],
+    ['07:15', '7:15 AM', 'Assembly: National Anthem, exercise', [], 'Dataran'],
+    ['08:00', '8:00 AM', 'Breakfast', [], 'Canteen'],
+    ['08:30', '8:30 AM', 'Preparation for the closing ceremony', [], ''],
+    ['09:30', '9:30 AM', 'Morning tea break', [], 'Canteen'],
+    ['10:15', '10:15 AM', 'Participants line up and gather', [], 'Hall'],
+    ['10:45', '10:45 AM', 'Arrival of invited guests and teachers', ['National Anthem, prayer led by an assigned facilitator', 'Speeches by the organiser, the Headmaster and accompanying teachers'], 'Hall'],
+    ['11:00', '11:00 AM', 'Closing ceremony 🏆', ['Montage screening by the Media Team', 'Certificate presentation by the Headmaster and Camp Organiser / Assistant Camp Organiser', 'Hampers for the Top 3 groups and appreciation gifts for the other groups', 'Awards for Penghulu/Penghuluwati, Best Participant and Best Facilitator', 'Performance by the Best Group'], 'Hall'],
+    ['12:30', '12:30 PM', 'Group photography session 📸', [], 'Hall'],
+    ['12:45', '12:45 PM', 'Jumaat / Zuhur prayer', [], ''],
+    ['14:00', '2:00 PM', 'Return from SK Kedaik to UPTM 🚌', [], '']
+  ]}
+];
+var scheduleDay = campToday() || 25;
+// which slot is on right now (only during the camp; uses the phone's own clock)
+function currentSlot(){
+  var today = campToday();
+  if(!today) return null;
+  var d = SCHEDULE.find(function(s){ return s.day === today; }), n = new Date();
+  var mins = n.getHours() * 60 + n.getMinutes(), cur = null;
+  d.items.forEach(function(it, i){ var hm = it[0].split(':'); if(+hm[0] * 60 + +hm[1] <= mins) cur = i; });
+  return cur === null ? null : {day:today, index:cur};
+}
+function renderSchedule(){
+  var el = document.getElementById('schedule-box');
+  var now = currentSlot(), today = campToday();
+  var d = SCHEDULE.find(function(s){ return s.day === scheduleDay; }) || SCHEDULE[0];
+  el.innerHTML = '<div class="day-tabs">' + SCHEDULE.map(function(s){
+      return '<button type="button" class="day-tab' + (s.day === d.day ? ' active' : '') + '" data-sday="' + s.day + '">' + s.label + (s.day === today ? ' · Today' : '') + '</button>';
+    }).join('') + '</div>' +
+    '<div class="sched-date">' + esc(d.date) + '</div>' +
+    '<ol class="sched-list">' + d.items.map(function(it, i){
+      var isNow = now && now.day === d.day && now.index === i, isSlot = /^Slot \d/.test(it[2]);
+      return '<li class="sched-item' + (isSlot ? ' slot' : '') + (isNow ? ' now' : '') + '">' +
+        '<div class="sched-time">' + esc(it[1]) + (isNow ? '<span class="now-badge">Now</span>' : '') + '</div>' +
+        '<div class="sched-body"><div class="sched-title">' + esc(it[2]) + '</div>' +
+          (it[3].length ? '<ul class="sched-details">' + it[3].map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
+          (it[4] ? '<div class="sched-venue">📍 ' + esc(it[4]) + '</div>' : '') +
+        '</div></li>';
+    }).join('') + '</ol>';
+  el.querySelectorAll('[data-sday]').forEach(function(b){
+    b.onclick = function(){ scheduleDay = +b.dataset.sday; SFX.pop(); renderSchedule(); };
+  });
+  // on camp days, scroll to the current slot once (looked up fresh, since the list can redraw)
+  if(el.querySelector('.sched-item.now') && !renderSchedule.scrolled){
+    renderSchedule.scrolled = true;
+    setTimeout(function(){
+      var n = document.querySelector('#view-schedule .sched-item.now');
+      if(n) n.scrollIntoView({behavior:'smooth', block:'center'});
+    }, 600);
+  }
+}
+setInterval(function(){ if(currentView() === 'schedule') renderSchedule(); }, 60000);   // keep "Now" up to date
 
 /* ---------- Big Screen slideshow ---------- */
 var SHOW_MS = 7000;

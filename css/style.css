@@ -984,3 +984,18 @@ body.show-mode .music-btn:hover{opacity:1}
 .hero-logo{margin-top:56px}
 .day-tab.boot{background:var(--minty-tint)}
 .day-tab.boot.active{background:var(--minty)}
+
+/* ===== camp schedule ===== */
+.sched-date{font-family:var(--font-head); font-weight:800; color:var(--muted); margin:-4px 0 14px}
+.sched-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+.sched-item{display:grid; grid-template-columns:118px 1fr; gap:12px; align-items:start; background:#fff; border:2.5px solid #E6DDF6;
+  border-radius:16px; padding:12px 14px}
+.sched-item.slot{border-color:var(--outline); background:var(--sky-tint); box-shadow:0 3px 0 var(--outline)}
+.sched-item.now{border-color:var(--outline); background:var(--sun-tint); box-shadow:0 4px 0 var(--outline)}
+.sched-time{font-family:var(--font-head); font-weight:800; color:var(--outline); font-size:.92rem; display:flex; flex-direction:column; align-items:flex-start; gap:4px}
+.now-badge{background:#E0306E; color:#fff; font-size:.68rem; padding:2px 9px; border-radius:999px; letter-spacing:.5px; animation:blink 1.4s steps(2) infinite}
+.sched-title{font-weight:800; color:var(--outline)}
+.sched-details{margin:6px 0 0 18px; padding:0; font-size:.86rem; color:var(--muted)}
+.sched-details li{margin:2px 0}
+.sched-venue{margin-top:6px; font-size:.8rem; font-weight:700; color:var(--muted)}
+@media (max-width:520px){ .sched-item{grid-template-columns:86px 1fr; gap:8px; padding:10px 12px} .sched-time{font-size:.8rem} }
