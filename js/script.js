@@ -800,10 +800,19 @@ document.addEventListener('keydown', function(e){
   wakeControls();
 });
 
-/* ---------- PM buddy (bottom-right corner) ---------- */
+/* ---------- PM buddy (bottom-right corner): cycles through 3 moves ---------- */
 (function(){
   var buddy = document.getElementById('pm-buddy'), bubble = document.getElementById('pm-bubble'), hideTimer = null, last = -1;
+  var MOVES = ['wave', 'jump', 'dance'], move = 0, moveTimer = null;
   var LINES = ['Dare to lead! 👑', 'Jom share gambar! 📸', 'Semangat semua! 💪', 'Good job, team! 🙌', 'Senyum sikit! 😁', 'Murid Berilmu, Pemimpin Masa Depan!'];
+  function setMove(i){
+    move = i % MOVES.length;
+    MOVES.forEach(function(m){ buddy.classList.remove('pm-mode-' + m); });
+    void buddy.offsetWidth;
+    buddy.classList.add('pm-mode-' + MOVES[move]);
+    clearTimeout(moveTimer);
+    moveTimer = setTimeout(function(){ setMove(move + 1); }, 3300);
+  }
   function speak(text){
     bubble.textContent = text;
     buddy.classList.add('talking');
@@ -814,9 +823,10 @@ document.addEventListener('keydown', function(e){
     var i; do { i = Math.floor(Math.random() * LINES.length); } while(i === last && LINES.length > 1);
     last = i;
     speak(LINES[i]);
-    buddy.classList.remove('hop'); void buddy.offsetWidth; buddy.classList.add('hop');
+    setMove(1);   // happy jump when tapped
     SFX.boing();
   });
+  setMove(0);
   setTimeout(function(){ speak('Hai semua! 👋'); }, 1200);
 })();
 
