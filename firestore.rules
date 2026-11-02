@@ -1,7 +1,7 @@
 rules_version = '2';
 
-// Paste this into Firebase console → Firestore Database → Rules, and replace
-// ADMIN_EMAIL_HERE with the admin account's email (same as adminEmail in js/firebase-config.js).
+// Firestore security rules for the ProLead photo wall (deployed with `firebase deploy --only firestore:rules`).
+// The admin list must match adminEmails in js/firebase-config.js.
 //
 // What these rules protect against:
 //  - nobody but the admin can approve, hide, edit or delete photos
@@ -17,11 +17,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // the admin must use their email + password account (anonymous visitors never count)
+    // the two admins must use their email + password accounts (anonymous visitors never count)
     function isAdmin() {
       return signedIn()
         && request.auth.token.firebase.sign_in_provider == 'password'
-        && request.auth.token.email == 'ADMIN_EMAIL_HERE';
+        && request.auth.token.email in ['iamazibsafwan@gmail.com', 'adamridhwansafie12@gmail.com'];
     }
 
     function validNewPost(d) {

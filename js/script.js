@@ -94,6 +94,7 @@ var posts = [];
 var isAdmin = false;
 var cloud = null;
 var FB = window.PROLEAD_FIREBASE || {};
+var ADMIN_EMAILS = (FB.adminEmails || (FB.adminEmail ? [FB.adminEmail] : [])).map(function(e){ return String(e).toLowerCase(); });
 if(window.firebase && FB.apiKey){
   try{
     firebase.initializeApp(FB);
@@ -165,7 +166,7 @@ if(cloud){
   cloud.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(function(){});
   cloud.auth.onAuthStateChanged(function(user){
     if(!user){ cloud.auth.signInAnonymously().catch(function(e){ console.error(e); }); }
-    isAdmin = !!user && !user.isAnonymous && !!FB.adminEmail && user.email === FB.adminEmail;
+    isAdmin = !!user && !user.isAnonymous && ADMIN_EMAILS.indexOf(String(user.email || '').toLowerCase()) !== -1;
     if(user && !user.isAnonymous && !isAdmin){ cloud.auth.signOut(); toast('That account is not an admin', '🚫'); }
     subscribePosts();
     subscribeReports();
