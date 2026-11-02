@@ -1410,7 +1410,9 @@ function showPreview(data){
   clearStickers();
   var frame = document.getElementById('photo-frame');
   frame.style.aspectRatio = data.w + ' / ' + data.h;
-  frame.style.width = 'min(100%, ' + Math.round(340 * data.w / data.h) + 'px)';
+  // the polaroid gets a fixed width (photo + 12px border each side); the photo fills it
+  frame.style.width = '100%';
+  document.getElementById('polaroid').style.width = 'min(100%, ' + (Math.round(340 * data.w / data.h) + 24) + 'px)';
   document.getElementById('preview-img').src = data.src;
   var wrap = document.getElementById('preview-wrap');
   wrap.hidden = false;
