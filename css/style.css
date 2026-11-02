@@ -1020,3 +1020,11 @@ body.show-mode .music-btn:hover{opacity:1}
 .duty-card thead + tbody td, .duty-card thead + tbody td:first-child{font-weight:700; color:var(--outline)}
 .duty-card.single td, .duty-card.single td:first-child{font-weight:800; color:var(--outline)}
 .duty-card .tbc{font-weight:600; color:var(--muted); font-style:italic}
+/* duty tables: same column widths in every card so names line up */
+.duty-card table{table-layout:fixed}
+.duty-card td:first-child, .duty-card th:first-child{width:48%}
+.duty-card.single td:first-child{width:auto}
+.duty-card td{vertical-align:middle; overflow-wrap:anywhere}
+/* phones: no tagline on the home page */
+@media (max-width:820px){ .hero .tagline{display:none} }
+@media (max-width:820px){ .hero-art{display:none} .hero{padding-bottom:0} }

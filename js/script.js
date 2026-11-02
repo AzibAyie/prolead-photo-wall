@@ -374,16 +374,6 @@ function emptyState(msg, sub){
 
 /* ---------- HOME ---------- */
 function renderHome(){
-  var catsEl = document.getElementById('home-categories');
-  catsEl.innerHTML = CATS.map(function(c){
-    var count = posts.filter(function(p){return p.category===c.id && p.status==='approved';}).length;
-    return '<a href="#explore" class="chip" data-gocat="'+c.id+'" style="background:'+c.bg+'; color:'+c.color+'; text-decoration:none">'+
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+c.color+'" stroke-width="2"><path d="'+c.icon+'" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
-      c.name+' <span style="opacity:.65">· '+count+'</span></a>';
-  }).join('');
-  catsEl.querySelectorAll('[data-gocat]').forEach(function(el){
-    el.addEventListener('click', function(){ pendingExploreCat = el.dataset.gocat; });
-  });
 
   var recent = posts.filter(function(p){return p.status==='approved';})
     .sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).slice(0,6);
