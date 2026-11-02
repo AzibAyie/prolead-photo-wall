@@ -19,10 +19,10 @@ var GROUP_COUNT = 12;
 var SEED_DEMO = true;
 var DEMO = [
   // [file, moment, day, hour, title, description, credit, group, status, challenge, reactions ❤️😂🔥👑]
-  ['09', 'arrival',   24, 10, 'On the road to Muadzam Shah 🚗', 'Snacks packed, playlist ready. Let\'s go!', 'Facilitator', '1', 'approved', 'roadtrip', [6,4,2,1]],
-  ['08', 'arrival',   24, 15, 'Hello, ASPURI hostel!', 'Our home for the next four days.', 'Media Team', '', 'approved', 'newhome', [5,0,1,0]],
-  ['11', 'arrival',   24, 16, 'Facilitators\' rest room is ready', 'Beds made, fans on. Rest well, team!', 'Logistic Team', '', 'approved', '', [3,1,0,0]],
-  ['13', 'arrival',   24, 17, 'Room check done ✅', 'Clean, comfy and cute bedsheets.', 'Logistic Team', '6', 'approved', '', [2,2,0,0]],
+  ['09', 'arrival',   25, 10, 'On the road to Muadzam Shah 🚗', 'Snacks packed, playlist ready. Let\'s go!', 'Facilitator', '1', 'approved', 'roadtrip', [6,4,2,1]],
+  ['08', 'arrival',   25, 15, 'Hello, ASPURI hostel!', 'Our home for the next three days.', 'Media Team', '', 'approved', 'newhome', [5,0,1,0]],
+  ['11', 'arrival',   25, 16, 'Facilitators\' rest room is ready', 'Beds made, fans on. Rest well, team!', 'Logistic Team', '', 'approved', '', [3,1,0,0]],
+  ['13', 'arrival',   25, 17, 'Room check done ✅', 'Clean, comfy and cute bedsheets.', 'Logistic Team', '6', 'approved', '', [2,2,0,0]],
   ['02', 'icebreak',  25, 17, 'Group cheer energy!', 'Loudest group wins, and we were LOUD.', 'Media Team', '3', 'approved', 'cheer', [12,3,9,4]],
   ['14', 'debate',    25, 21, 'The debate chamber is set', 'Order, order! Parliamentary Debate starts tonight.', 'Activity Team', '', 'approved', '', [4,0,2,1]],
   ['03', 'questrace', 26,  8, 'Team photo before QuestRace', 'Peace signs up before checkpoint 1!', 'Facilitator', '5', 'approved', 'checkpoint', [9,2,6,3]],
@@ -493,26 +493,26 @@ document.addEventListener('click', function(e){
 /* ---------- daily photo challenges ---------- */
 var CHALLENGE_XP = 20;
 var CHALLENGES = [
-  {id:'roadtrip',   day:24, e:'🚌', t:'Road trip selfie with your squad'},
-  {id:'newhome',    day:24, e:'🏠', t:'Our home for 4 days'},
-  {id:'firstsmile', day:24, e:'😁', t:'First big smile of camp'},
+  {id:'roadtrip',   day:25, e:'🚌', t:'Road trip selfie with your squad'},
+  {id:'newhome',    day:25, e:'🏠', t:'Our home for 3 days'},
+  {id:'firstsmile', day:25, e:'😁', t:'First big smile of camp'},
   {id:'cheer',      day:25, e:'📣', t:'Your group\'s cheer pose'},
-  {id:'newfriend',  day:25, e:'🤝', t:'Photo with a new friend'},
-  {id:'debateface', day:25, e:'🎤', t:'Most dramatic debate face'},
+  {id:'newfriend',  day:26, e:'🤝', t:'Photo with a new friend'},
+  {id:'debateface', day:26, e:'🎤', t:'Most dramatic debate face'},
   {id:'checkpoint', day:26, e:'🚩', t:'QuestRace checkpoint victory'},
-  {id:'yellow',     day:26, e:'💛', t:'Find something yellow'},
   {id:'costume',    day:26, e:'🎭', t:'Best Cultural Night costume'},
+  {id:'yellow',     day:27, e:'💛', t:'Find something yellow'},
   {id:'certificate',day:27, e:'📜', t:'Certificate proud pose'},
   {id:'goodbye',    day:27, e:'🤗', t:'Group goodbye photo'},
   {id:'thanks',     day:27, e:'🙏', t:'Say thanks to a teacher'}
 ];
-var CAMP_DAYS = [24, 25, 26, 27];
+var CAMP_DAYS = [25, 26, 27];
 function challenge(id){ return CHALLENGES.find(function(c){ return c.id === id; }); }
 function campToday(){
   var n = new Date();
   return (n.getFullYear() === 2026 && n.getMonth() === 10 && CAMP_DAYS.indexOf(n.getDate()) !== -1) ? n.getDate() : null;
 }
-var challengeDay = campToday() || 24, pendingChallenge = null;
+var challengeDay = campToday() || 25, pendingChallenge = null;
 function renderChallenges(){
   document.querySelectorAll('.challenge-box').forEach(renderChallengeBox);
 }
