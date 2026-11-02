@@ -307,7 +307,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','schedule','challenges','submit','admin','show'];
+var VIEWS = ['home','explore','schedule','duties','challenges','submit','admin','show'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
