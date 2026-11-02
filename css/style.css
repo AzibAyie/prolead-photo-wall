@@ -1028,3 +1028,29 @@ body.show-mode .music-btn:hover{opacity:1}
 /* phones: no tagline on the home page */
 @media (max-width:820px){ .hero .tagline{display:none} }
 @media (max-width:820px){ .hero-art{display:none} .hero{padding-bottom:0} }
+
+/* ===== PM buddy: waving cartoon in the bottom-right corner ===== */
+.pm-buddy{position:fixed; right:14px; bottom:12px; z-index:55; background:none; border:none; padding:0; cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.pm-svg{display:block; overflow:visible; filter:drop-shadow(0 3px 0 rgba(59,42,99,.15))}
+.pm-body{transform-origin:60px 150px; animation:pm-bob 1.6s ease-in-out infinite}
+.pm-head{transform-origin:60px 90px; animation:pm-tilt 3.2s ease-in-out infinite}
+.pm-wave{transform-origin:90px 108px; animation:pm-wave 1.6s ease-in-out infinite}
+@keyframes pm-bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-4px) scale(1.01,.99)}}
+@keyframes pm-tilt{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes pm-wave{0%,40%,100%{transform:rotate(0)}10%,30%{transform:rotate(-22deg)}20%{transform:rotate(8deg)}}
+.pm-buddy.hop .pm-svg{animation:pm-hop .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pm-hop{0%{transform:translateY(0)}40%{transform:translateY(-18px) rotate(-6deg)}100%{transform:translateY(0)}}
+.pm-bubble{position:absolute; right:70px; bottom:96px; white-space:nowrap; background:#fff; color:var(--outline); border:2.5px solid var(--outline);
+  border-radius:14px; box-shadow:0 3px 0 var(--outline); padding:5px 11px; font-family:var(--font-head); font-weight:800; font-size:.8rem;
+  opacity:0; transform:translateY(6px) scale(.8); transform-origin:bottom right; transition:opacity .2s, transform .25s cubic-bezier(.34,1.56,.64,1); pointer-events:none}
+.pm-bubble::after{content:""; position:absolute; right:-7px; bottom:8px; width:10px; height:10px; background:#fff;
+  border-right:2.5px solid var(--outline); border-bottom:2.5px solid var(--outline); transform:rotate(-45deg)}
+.pm-buddy.talking .pm-bubble{opacity:1; transform:none}
+body.show-mode .pm-buddy{display:none}
+@media (max-width:820px){
+  .pm-buddy{right:6px; bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+  .pm-svg{width:68px; height:85px}
+  .pm-bubble{bottom:70px; right:52px; font-size:.72rem}
+  body.typing .pm-buddy{display:none}
+}

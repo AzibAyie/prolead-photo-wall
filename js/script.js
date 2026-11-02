@@ -800,6 +800,26 @@ document.addEventListener('keydown', function(e){
   wakeControls();
 });
 
+/* ---------- PM buddy (bottom-right corner) ---------- */
+(function(){
+  var buddy = document.getElementById('pm-buddy'), bubble = document.getElementById('pm-bubble'), hideTimer = null, last = -1;
+  var LINES = ['Dare to lead! 👑', 'Jom share gambar! 📸', 'Semangat semua! 💪', 'Good job, team! 🙌', 'Senyum sikit! 😁', 'Murid Berilmu, Pemimpin Masa Depan!'];
+  function speak(text){
+    bubble.textContent = text;
+    buddy.classList.add('talking');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){ buddy.classList.remove('talking'); }, 2600);
+  }
+  buddy.addEventListener('click', function(){
+    var i; do { i = Math.floor(Math.random() * LINES.length); } while(i === last && LINES.length > 1);
+    last = i;
+    speak(LINES[i]);
+    buddy.classList.remove('hop'); void buddy.offsetWidth; buddy.classList.add('hop');
+    SFX.boing();
+  });
+  setTimeout(function(){ speak('Hai semua! 👋'); }, 1200);
+})();
+
 /* ---------- typing on phones ---------- */
 // While a text box is focused (keyboard open), hide the bottom tab bar so it can't jump up over what you're typing.
 function isTypingField(el){
