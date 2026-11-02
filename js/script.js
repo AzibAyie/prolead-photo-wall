@@ -13,7 +13,7 @@ var CATS = [
   {id:'closing',   name:'Closing Ceremony',    color:'#A85A00', bg:'#FFE3A3', icon:'M8 4h8v5a4 4 0 01-8 0zM8 6H5a3 3 0 003 3M16 6h3a3 3 0 01-3 3M12 13v4M8 21h8M9 17h6'}
 ];
 function cat(id){ return CATS.find(function(c){return c.id===id}) || CATS[0]; }
-var GROUP_COUNT = 12;
+var GROUP_COUNT = 9;
 
 /* ---------- demo posts (img/demo) — set to false before the real camp ---------- */
 var SEED_DEMO = true;
@@ -72,7 +72,7 @@ function cleanPost(p){
     title: text(p.title, 80) || 'Untitled', description: text(p.description, 280),
     displayName: text(p.displayName, 40) || 'Anonymous', anonymous: p.anonymous === true,
     category: CATS.some(function(c){ return c.id === p.category; }) ? p.category : CATS[0].id,
-    group: /^([1-9]|1[0-2])$/.test(p.group) ? p.group : '',
+    group: /^[1-9]$/.test(p.group) ? p.group : '',
     challenge: /^[a-z]{1,20}$/.test(p.challenge) ? p.challenge : '',
     image: safeImg(p.image), date: isNaN(new Date(p.date)) ? new Date(0).toISOString() : p.date,
     status: status, rejectReason: text(p.rejectReason, 200),
