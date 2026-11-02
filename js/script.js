@@ -799,6 +799,200 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
+/* background music: a soothing kalimba lofi tune composed in code (no audio file, no copyright) */
+var music = {on: player.music !== false, playing:false, timer:null, bus:null, session:null, nextBar:0, bar:0};
+var BEAT = 60 / 84, EIGHTH = BEAT / 2, SWING = EIGHTH * .18;
+// feel-good loop C → G → Am → F: [bass, soft-piano voicing] as MIDI notes
+var PROG = [
+  [48, [55,60,64,67]],
+  [43, [55,59,62,67]],
+  [45, [57,60,64,69]],
+  [41, [57,60,65,69]]
+];
+var MELODY = [ // the kalimba hook, eight eighth-notes per bar (0 = rest); 8 bars = two times round the chords
+  [72,0,76,0,79,0,76,74], [74,0,71,0,67,0,0,0], [69,0,72,0,76,0,74,72], [72,0,69,0,0,0,0,0],
+  [72,0,76,0,79,0,81,79], [76,0,74,0,71,0,74,0], [72,0,69,0,76,0,74,0], [72,0,0,0,0,0,0,0]
+];
+function midiHz(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+// one sine "partial" with a quick attack and a natural fade (every note ends on its own)
+function partial(f, t, vol, attack, decay, hold){
+  var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
+  if(hold){   // settle to a warm hold level, then fade out just before the length ends
+    g.gain.exponentialRampToValueAtTime(vol * hold, t + attack + .45);
+    g.gain.setValueAtTime(vol * hold, t + attack + decay - .15);
+    g.gain.linearRampToValueAtTime(0, t + attack + decay);
+  } else g.gain.exponentialRampToValueAtTime(.0001, t + attack + decay);
+  o.connect(g); g.connect(music.session);
+  o.start(t); o.stop(t + attack + decay + .05);
+}
+function kalimba(m, t, vol){
+  var f = midiHz(m);
+  partial(f, t, vol, .004, 1.1);
+  partial(f * 2, t, vol * .22, .003, .35);
+  partial(f * 5.4, t, vol * .05, .002, .12);     // the bright "tine" click
+}
+function pianoChord(notes, t, beats, vol){
+  notes.forEach(function(m, k){
+    var f = midiHz(m), at = t + k * .014;           // gently rolled
+    partial(f * .998, at, vol, .012, BEAT * beats, .4);
+    partial(f * 1.002, at, vol, .012, BEAT * beats, .4);
+    partial(f * 2, at, vol * .2, .01, BEAT * beats * .5);
+  });
+}
+function bassNote(m, t, beats, vol){
+  var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'triangle'; o.frequency.value = midiHz(m);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + .02);
+  g.gain.exponentialRampToValueAtTime(.0001, t + BEAT * beats);
+  o.connect(g); g.connect(music.session);
+  o.start(t); o.stop(t + BEAT * beats + .05);
+}
+function drumHit(kind, t, vol){
+  var g = audioCtx.createGain();
+  g.connect(music.session);
+  if(kind === 'kick'){
+    var o = audioCtx.createOscillator();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(55, t + .1);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.001, t + .25);
+    o.connect(g); o.start(t); o.stop(t + .28);
+    return;
+  }
+  var src = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), len = kind === 'snap' ? .09 : .035;
+  src.buffer = music.bus.noise;
+  if(kind === 'snap'){ f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 1.2; }
+  else { f.type = 'highpass'; f.frequency.value = 6500; }
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .003); g.gain.exponentialRampToValueAtTime(.001, t + len);
+  src.connect(f); f.connect(g);
+  src.start(t, Math.random() * .5); src.stop(t + len + .02);
+}
+function scheduleBar(t, i){
+  // a two-bar intro on Am → F, then the loop starts on C with the melody
+  var chord = PROG[(i + 2) % 4];
+  function at(k){ return t + k*EIGHTH + (k % 2 ? SWING : 0); }
+  pianoChord(chord[1], t, 2, .06);
+  pianoChord(chord[1], t + BEAT*2, 2, .048);
+  bassNote(chord[0] + 12, t, 2.4, .2);
+  bassNote(chord[0] + 12, at(5), 1.3, .13);
+  if(i >= 1){
+    drumHit('kick', at(0), .4); drumHit('kick', at(4), .32);
+    drumHit('snap', at(2), .22); drumHit('snap', at(6), .22);
+    for(var k=0; k<8; k++) drumHit('shaker', at(k), k % 2 ? .035 : .055);
+  }
+  if(i >= 2) MELODY[(i - 2) % MELODY.length].forEach(function(m, k){
+    if(!m) return;
+    kalimba(m, at(k), .25);
+    kalimba(m, at(k) + BEAT * .75, .045);          // one soft echo, no feedback loop
+  });
+}
+function musicTick(){
+  while(music.nextBar < audioCtx.currentTime + 1){
+    scheduleBar(music.nextBar, music.bar++);
+    music.nextBar += BEAT * 4;
+  }
+}
+function buildMusicBus(){
+  var c = audioCtx;
+  var input = c.createGain(), tone = c.createBiquadFilter(), comp = c.createDynamicsCompressor(), master = c.createGain();
+  tone.type = 'lowpass'; tone.frequency.value = 7000;
+  input.connect(tone); tone.connect(comp); comp.connect(master); master.connect(c.destination);
+  master.gain.value = 1;
+  var noise = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = noise.getChannelData(0);
+  for(var i=0; i<nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  return {input:input, master:master, noise:noise};
+}
+// Browsers keep audio muted until the visitor taps. Only count the music as playing once the
+// browser has really unmuted; otherwise stay "waiting" and try again on the next tap.
+function startMusic(){
+  try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
+  if(music.playing || !music.on) return;
+  // Only try while the browser counts this as a real tap; an early attempt (e.g. the moment a finger
+  // lands on a phone) gets put on hold by the browser and would swallow the tap that does count.
+  var ua = navigator.userActivation;
+  if(ua && !ua.isActive && !(audioCtx && audioCtx.state === 'running')) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  }catch(e){ return; }
+  // a silent blip inside the tap helps some phones unlock audio
+  try{ var s = audioCtx.createBufferSource(); s.buffer = audioCtx.createBuffer(1, 1, 22050); s.connect(audioCtx.destination); s.start(0); }catch(e){}
+  var resumed = audioCtx.state === 'running' ? Promise.resolve() : audioCtx.resume();
+  Promise.resolve(resumed).then(function(){
+    if(audioCtx.state === 'running' && music.on && !document.hidden) beginMusic();
+    renderMusicBtn();
+  }, function(){ renderMusicBtn(); });
+}
+// Every start gets its own volume channel ("session"). Stopping fades that channel out and unplugs it,
+// so notes that were already queued can never play on top of the next start.
+function beginMusic(){
+  if(music.playing) return;
+  try{
+    if(!music.bus) music.bus = buildMusicBus();
+    var s = audioCtx.createGain(), now = audioCtx.currentTime;
+    s.gain.setValueAtTime(0, now);
+    s.gain.linearRampToValueAtTime(1, now + 1.2);                            // gentle fade in
+    s.connect(music.bus.input);
+    music.session = s;
+    music.nextBar = now + .1;
+    music.bar = 0;
+    clearInterval(music.timer);
+    music.timer = setInterval(musicTick, 250);
+    musicTick();
+    music.playing = true;
+  }catch(e){}
+  renderMusicBtn();
+}
+function stopMusic(){
+  if(!music.playing) return;
+  clearInterval(music.timer);
+  var s = music.session, now = audioCtx.currentTime;
+  s.gain.cancelScheduledValues(now);
+  s.gain.setValueAtTime(Math.max(s.gain.value, .0001), now);
+  s.gain.exponentialRampToValueAtTime(.0001, now + .3);                     // gentle fade out
+  setTimeout(function(){ s.disconnect(); }, 400);                           // queued notes now go nowhere
+  music.session = null;
+  music.playing = false;
+  renderMusicBtn();
+}
+function renderMusicBtn(){
+  ['music-btn', 'show-music'].forEach(function(id){
+    var btn = document.getElementById(id);
+    btn.classList.toggle('playing', music.playing);
+    btn.classList.toggle('waiting', music.on && !music.playing);
+    btn.setAttribute('aria-pressed', String(music.on));
+    btn.title = music.on ? 'Cozy music: on (tap to turn off)' : 'Cozy music: off (tap to turn on)';
+  });
+}
+function onMusicBtn(e){
+  e.stopPropagation();
+  music.unlocked = true;
+  if(music.on && !music.playing){ startMusic(); return; }   // first click just starts it
+  music.on = !music.on;
+  player.music = music.on; savePlayer();
+  if(music.on) startMusic(); else stopMusic();
+  renderMusicBtn();
+}
+document.getElementById('music-btn').addEventListener('click', onMusicBtn);
+document.getElementById('show-music').addEventListener('click', onMusicBtn);
+// Start on the visitor's first interaction. Phones only treat a finished tap (touchend / click) as
+// permission, not the moment the finger lands, so listen to all of these and keep retrying.
+['mousedown','pointerup','touchend','click','keydown'].forEach(function(ev){
+  document.addEventListener(ev, function(e){
+    if(e.target.closest && e.target.closest('#music-btn, #show-music')) return;
+    music.unlocked = true;
+    if(music.playing && audioCtx.state !== 'running') audioCtx.resume();   // e.g. after the phone screen was locked
+    startMusic();
+  }, {passive:true});
+});
+document.addEventListener('visibilitychange', function(){
+  if(!audioCtx || !music.playing) return;
+  if(document.hidden) audioCtx.suspend().catch(function(){});
+  else audioCtx.resume().catch(function(){});
+});
+renderMusicBtn();
+
 /* Mochi the mascot */
 var mochi = document.getElementById('mochi');
 var bubble = document.getElementById('mochi-bubble');
