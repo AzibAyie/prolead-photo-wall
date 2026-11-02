@@ -799,59 +799,6 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
-/* background music: the official "Sesi Potret" video by eńau feat. Ari Lesmana, embedded from the
-   artist's own YouTube channel, so it plays from YouTube and the artist gets the views.
-   YouTube's rules don't allow a hidden player, so it shows as a small "now playing" card. */
-var SONG = {id:'Nskf70DMR60', title:'Sesi Potret', artist:'eńau feat. Ari Lesmana'};
-var music = {on: player.music !== false, open:false, started:false};
-function openMusic(){
-  if(music.open) return;
-  document.getElementById('yt-frame').innerHTML =
-    '<iframe src="https://www.youtube-nocookie.com/embed/' + SONG.id + '?autoplay=1&loop=1&playlist=' + SONG.id + '&rel=0&playsinline=1"' +
-    ' title="' + escAttr(SONG.title + ' – ' + SONG.artist) + '" allow="autoplay; encrypted-media; picture-in-picture"' +
-    ' referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
-  document.getElementById('yt-player').hidden = false;
-  music.open = true;
-  renderMusicBtn();
-}
-function closeMusic(){
-  document.getElementById('yt-frame').innerHTML = '';   // removing the player stops the song
-  document.getElementById('yt-player').hidden = true;
-  music.open = false;
-  renderMusicBtn();
-}
-function renderMusicBtn(){
-  ['music-btn', 'show-music'].forEach(function(id){
-    var btn = document.getElementById(id);
-    btn.classList.toggle('playing', music.open);
-    btn.classList.toggle('waiting', music.on && !music.open);
-    btn.setAttribute('aria-pressed', String(music.on));
-    btn.title = music.open ? 'Music: Sesi Potret (tap to turn off)' : 'Music: tap to play Sesi Potret';
-  });
-}
-function setMusicOn(on){
-  music.on = on; player.music = on; savePlayer();
-  if(on) openMusic(); else closeMusic();
-}
-function onMusicBtn(e){
-  e.stopPropagation();
-  music.started = true;
-  setMusicOn(!music.open);
-}
-document.getElementById('music-btn').addEventListener('click', onMusicBtn);
-document.getElementById('show-music').addEventListener('click', onMusicBtn);
-document.getElementById('yt-close').addEventListener('click', function(e){ e.stopPropagation(); setMusicOn(false); });
-// like before, the song starts with the visitor's first tap or click (browsers need that before playing sound)
-['pointerup','touchend','click','keydown'].forEach(function(ev){
-  document.addEventListener(ev, function(e){
-    if(music.started || !music.on) return;
-    if(e.target.closest && e.target.closest('#music-btn, #show-music, #yt-player')) return;
-    music.started = true;
-    openMusic();
-  }, {passive:true});
-});
-renderMusicBtn();
-
 /* Mochi the mascot */
 var mochi = document.getElementById('mochi');
 var bubble = document.getElementById('mochi-bubble');
