@@ -542,8 +542,7 @@ document.addEventListener('click', function(e){
 /* ---------- daily photo challenges ---------- */
 var CHALLENGE_XP = 20;
 var CHALLENGES = [
-  {id:'briefing',   day:'boot', e:'📋', t:'Team briefing selfie'},
-  {id:'setup',      day:'boot', e:'🛠️', t:'Setting up the venue'},
+  {id:'briefing',   day:'boot', e:'📸', t:'Group photo'},
   {id:'rehearsal',  day:'boot', e:'🎬', t:'Rehearsal behind the scenes'},
   {id:'roadtrip',   day:25, e:'🚌', t:'Road trip selfie with your squad'},
   {id:'newhome',    day:25, e:'🏠', t:'Our home for 3 days'},
