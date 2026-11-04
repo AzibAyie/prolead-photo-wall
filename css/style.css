@@ -936,9 +936,9 @@ body.show-mode .music-btn:hover{opacity:1}
   .stage .missions, .stage .shelf-head, .stage .badge-shelf, .stage .mochi-shadow{display:none}
   .dz-phone .btn{display:flex; align-items:center; justify-content:center; gap:8px}
 
-  /* photo cards: calmer */
-  .card .react-row, .card .ch-pill{display:none}
-  .react-sum{display:block}
+  /* photo cards: same 4 reaction buttons as on a computer */
+  .card .ch-pill{display:none}
+
   .card .card-meta{font-size:.68rem}
 
   /* Big Screen on a phone */
