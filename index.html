@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261105b">
+<link rel="stylesheet" href="css/style.css?v=20261105c">
 </head>
 <body>
 <div class="blob-field">
@@ -32,6 +32,7 @@
       <a href="#home" class="navlink" data-route="home">Home</a>
       <a href="#explore" class="navlink" data-route="explore">Explore</a>
       <a href="#schedule" class="navlink" data-route="schedule">Schedule</a>
+      <a href="#committee" class="navlink" data-route="committee">Committee</a>
       <a href="#challenges" class="navlink" data-route="challenges">Challenges</a>
       <a href="#submit" class="navlink" data-route="submit">Share</a>
       <a href="#show" class="navlink show-link" data-route="show">Big Screen</a>
@@ -72,6 +73,7 @@
             <a href="#explore" class="btn btn-primary">See Camp Photos</a>
             <a href="#submit" class="btn btn-accent">Play Photo Quest</a>
             <a href="#duties" class="btn btn-duties">Special Duties</a>
+            <a href="#committee" class="btn btn-committee">Committee</a>
             <a href="#show" class="btn btn-ghost">Big Screen</a>
           </div>
         </div>
@@ -98,6 +100,16 @@
       <div class="challenge-box"></div>
     </div>
 
+  </section>
+
+  <!-- COMMITTEE -->
+  <section class="view" id="view-committee" hidden>
+    <div class="section">
+      <span class="eyebrow">Ready to Serve, Ready to Lead</span>
+      <h2 style="margin-top:6px">Committee Tree</h2>
+      <p class="hint" style="margin-bottom:18px">Tap a name to see who they are.</p>
+      <div id="committee-box"></div>
+    </div>
   </section>
 
   <!-- SPECIAL DUTIES -->
@@ -405,6 +417,17 @@
 </div>
 <div class="zoomed" id="zoom-scrim"><img id="zoom-img" alt=""></div>
 
+<!-- Committee member photo -->
+<div class="scrim" id="member-scrim">
+  <div class="modal modal-pos member-modal" role="dialog" aria-modal="true" aria-labelledby="member-name">
+    <button class="icon-btn modal-close" id="member-close" aria-label="Close" style="background:rgba(0,0,0,.35); border:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+    </button>
+    <div class="member-photo" id="member-photo"></div>
+    <div class="modal-body member-body"><span class="member-role" id="member-role"></span><h3 id="member-name"></h3></div>
+  </div>
+</div>
+
 <!-- Admin review modal -->
 <div class="scrim" id="review-scrim">
   <div class="modal modal-pos" id="review-modal">
@@ -495,7 +518,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous"></script>
-<script src="js/firebase-config.js?v=20261105b"></script>
-<script src="js/script.js?v=20261105b"></script>
+<script src="js/firebase-config.js?v=20261105c"></script>
+<script src="js/script.js?v=20261105c"></script>
 </body>
 </html>

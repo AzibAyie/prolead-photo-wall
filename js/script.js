@@ -307,7 +307,7 @@ function showConfirm(opts){
 }
 
 /* ---------- routing ---------- */
-var VIEWS = ['home','explore','schedule','duties','challenges','submit','admin','show'];
+var VIEWS = ['home','explore','schedule','committee','duties','challenges','submit','admin','show'];
 function currentView(){
   var hash = (location.hash || '#home').slice(1);
   return VIEWS.indexOf(hash) === -1 ? 'home' : hash;
@@ -340,6 +340,65 @@ function renderCurrent(){
   }
 }
 window.addEventListener('hashchange', route);
+
+/* ---------- COMMITTEE TREE: tap a name to see their photo ---------- */
+// photo: file name in img/team/ (leave it out until the photo is added)
+var COMMITTEE = [
+  {role:'Advisors', icon:'👥', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
+  {role:'Project Manager', icon:'👑', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
+  {role:'Project Assistant', icon:'📋', tier:'lead', people:[{n:'Anis Nabihah binti Jalaludin Albakri'}]},
+  {role:'Secretary', icon:'📝', tier:'lead', people:[{n:'Nur Yasmin Rasyiqah binti Mohd Yazriha'}]},
+  {role:'Treasurer', icon:'💰', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
+  {role:'Head of Facilitator', icon:'🧭', tier:'lead', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
+  {role:'Media & Documentation', icon:'📷', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
+  {role:'Logistic & Food', icon:'🚚', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
+  {role:'Technical', icon:'⚙️', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
+  {role:'Activity', icon:'⭐', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Wan Nur Asmaa’ binti Moidin'}, {n:''}]},
+  {role:'Protocol & Safety', icon:'🛡️', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
+];
+function initials(name){
+  return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
+    .slice(0, 2).map(function(w){ return w[0]; }).join('');
+}
+function memberBtn(p, gi, pi){
+  if(!p.n) return '<span class="member tbc">To be confirmed</span>';
+  return '<button type="button" class="member" data-m="'+gi+'-'+pi+'"><span class="member-av">'+
+    (p.photo ? '<img src="img/team/'+escAttr(p.photo)+'" alt="" loading="lazy">' : esc(initials(p.n)))+'</span><span>'+esc(p.n)+'</span></button>';
+}
+function committeeGroup(g, gi){
+  return '<div class="cm-card cm-'+g.tier+'"><h3><span aria-hidden="true">'+g.icon+'</span> '+esc(g.role)+'</h3><div class="cm-people">'+
+    g.people.map(function(p, pi){ return memberBtn(p, gi, pi); }).join('')+'</div></div>';
+}
+function renderCommittee(){
+  var box = document.getElementById('committee-box');
+  function tier(t){
+    return COMMITTEE.map(function(g, gi){ return g.tier === t ? committeeGroup(g, gi) : ''; }).join('');
+  }
+  box.innerHTML = '<div class="cm-tree">'+
+    '<div class="cm-row cm-row-top">'+tier('top')+'</div>'+
+    '<div class="cm-row cm-row-pm">'+tier('pm')+'</div>'+
+    '<div class="cm-row cm-row-lead">'+tier('lead')+'</div>'+
+    '<div class="cm-row cm-row-unit">'+tier('unit')+'</div></div>';
+  box.querySelectorAll('[data-m]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var ix = b.dataset.m.split('-'), g = COMMITTEE[+ix[0]], p = g.people[+ix[1]];
+      openMember(g, p);
+    });
+  });
+}
+function openMember(g, p){
+  document.getElementById('member-role').textContent = g.icon + ' ' + g.role;
+  document.getElementById('member-name').textContent = p.n;
+  document.getElementById('member-photo').innerHTML = p.photo
+    ? '<img src="img/team/'+escAttr(p.photo)+'" alt="'+escAttr(p.n)+'">'
+    : '<div class="member-ph"><span>'+esc(initials(p.n))+'</span><small>Photo coming soon 📸</small></div>';
+  document.getElementById('member-scrim').classList.add('show');
+  try{ SFX.pop(); }catch(e){}
+}
+document.getElementById('member-close').addEventListener('click', function(){ document.getElementById('member-scrim').classList.remove('show'); });
+document.getElementById('member-scrim').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('show'); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.getElementById('member-scrim').classList.remove('show'); });
+renderCommittee();
 
 /* ---------- chip rendering ---------- */
 function chipHTML(c, active){
