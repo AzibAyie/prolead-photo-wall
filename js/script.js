@@ -345,7 +345,7 @@ window.addEventListener('hashchange', route);
 // photo: file name in img/team/ (leave it out until the photo is added)
 var COMMITTEE = [
   {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
-  {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
+  {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie', photo:'adamridhwan.jpg'}]},
   {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=5'}]},
   {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi', photo:'durrah.jpg'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme', photo:'hanif.jpg'}]},
