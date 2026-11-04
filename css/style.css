@@ -1111,7 +1111,7 @@ body.show-mode .pm-buddy{display:none}
 .cm-card{background:#fff; border:3px solid var(--outline); border-radius:20px; box-shadow:0 5px 0 var(--outline); min-width:0; position:relative}
 .cm-card h3{margin:0; border-radius:17px 17px 0 0; padding:9px 14px; background:var(--sky); border-bottom:3px solid var(--outline); font-size:.98rem; color:var(--outline); text-align:center}
 .cm-top{width:min(100%, 520px)} .cm-pm, .cm-pa{width:min(100%, 420px)}
-.cm-pa h3{background:#FFC2DA}
+.cm-pa h3{background:#FFD86B}
 .cm-pm h3{background:#FFD86B}
 .cm-row-lead .cm-card{flex:1 1 220px; max-width:280px}
 .cm-row-lead h3{background:#FFC2DA}
