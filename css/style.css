@@ -1108,8 +1108,8 @@ body.show-mode .pm-buddy{display:none}
 .cm-tree{display:flex; flex-direction:column; align-items:center; gap:28px}
 .cm-row{display:flex; flex-wrap:wrap; justify-content:center; gap:16px; width:100%; position:relative}
 .cm-row + .cm-row::before{content:""; position:absolute; top:-28px; left:50%; width:3px; height:28px; margin-left:-1.5px; background:var(--outline); border-radius:2px}
-.cm-card{background:#fff; border:3px solid var(--outline); border-radius:20px; box-shadow:0 5px 0 var(--outline); overflow:hidden; min-width:0}
-.cm-card h3{margin:0; padding:9px 14px; background:var(--sky); border-bottom:3px solid var(--outline); font-size:.98rem; color:var(--outline); text-align:center}
+.cm-card{background:#fff; border:3px solid var(--outline); border-radius:20px; box-shadow:0 5px 0 var(--outline); min-width:0; position:relative}
+.cm-card h3{margin:0; border-radius:17px 17px 0 0; padding:9px 14px; background:var(--sky); border-bottom:3px solid var(--outline); font-size:.98rem; color:var(--outline); text-align:center}
 .cm-top{width:min(100%, 520px)} .cm-pm{width:min(100%, 420px)}
 .cm-pm h3{background:#FFD86B}
 .cm-row-lead .cm-card{flex:1 1 220px; max-width:280px}
@@ -1148,4 +1148,15 @@ body.show-mode .pm-buddy{display:none}
   .cm-row-lead .member{flex-direction:column; text-align:center; font-size:.78rem; gap:6px}
   .cm-row-unit{grid-template-columns:1fr}
   .member-modal{border-radius:26px 26px 0 0}
+}
+/* committee tree lines on wide screens: PM -> bar -> each lead, and down again -> bar -> each team */
+@media (min-width:1101px){
+  .cm-row-unit{grid-template-columns:repeat(5, 1fr)}
+  .cm-row-lead::before, .cm-row-unit::before{height:15px}
+  .cm-row-lead::after{content:""; position:absolute; top:-14px; bottom:0; left:50%; width:3px; margin-left:-1.5px; background:var(--outline)}
+  .cm-row-lead .cm-card::before, .cm-row-unit .cm-card::before{content:""; position:absolute; top:-17px; left:50%; width:3px; height:15px; margin-left:-1.5px; background:var(--outline)}
+  .cm-row-lead .cm-card::after{content:""; position:absolute; top:-17px; left:-11px; right:-11px; height:3px; background:var(--outline)}
+  .cm-row-unit .cm-card::after{content:""; position:absolute; top:-17px; left:-9px; right:-9px; height:3px; background:var(--outline)}
+  .cm-row-lead .cm-card:first-child::after, .cm-row-unit .cm-card:first-child::after{left:50%}
+  .cm-row-lead .cm-card:last-child::after, .cm-row-unit .cm-card:last-child::after{right:50%}
 }

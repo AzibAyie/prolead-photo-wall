@@ -344,17 +344,17 @@ window.addEventListener('hashchange', route);
 /* ---------- COMMITTEE TREE: tap a name to see their photo ---------- */
 // photo: file name in img/team/ (leave it out until the photo is added)
 var COMMITTEE = [
-  {role:'Advisors', icon:'👥', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
-  {role:'Project Manager', icon:'👑', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
-  {role:'Project Assistant', icon:'📋', tier:'lead', people:[{n:'Anis Nabihah binti Jalaludin Albakri'}]},
-  {role:'Secretary', icon:'📝', tier:'lead', people:[{n:'Nur Yasmin Rasyiqah binti Mohd Yazriha'}]},
-  {role:'Treasurer', icon:'💰', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
-  {role:'Head of Facilitator', icon:'🧭', tier:'lead', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
-  {role:'Media & Documentation', icon:'📷', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
-  {role:'Logistic & Food', icon:'🚚', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
-  {role:'Technical', icon:'⚙️', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
-  {role:'Activity', icon:'⭐', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Wan Nur Asmaa’ binti Moidin'}, {n:''}]},
-  {role:'Protocol & Safety', icon:'🛡️', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
+  {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
+  {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
+  {role:'Project Assistant', tier:'lead', people:[{n:'Anis Nabihah binti Jalaludin Albakri'}]},
+  {role:'Secretary', tier:'lead', people:[{n:'Nur Yasmin Rasyiqah binti Mohd Yazriha'}]},
+  {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
+  {role:'Head of Facilitator', tier:'lead', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
+  {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
+  {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
+  {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
+  {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Wan Nur Asmaa’ binti Moidin'}, {n:''}]},
+  {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
 ];
 function initials(name){
   return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
@@ -366,7 +366,7 @@ function memberBtn(p, gi, pi){
     (p.photo ? '<img src="img/team/'+escAttr(p.photo)+'" alt="" loading="lazy">' : esc(initials(p.n)))+'</span><span>'+esc(p.n)+'</span></button>';
 }
 function committeeGroup(g, gi){
-  return '<div class="cm-card cm-'+g.tier+'"><h3><span aria-hidden="true">'+g.icon+'</span> '+esc(g.role)+'</h3><div class="cm-people">'+
+  return '<div class="cm-card cm-'+g.tier+'"><h3>'+esc(g.role)+'</h3><div class="cm-people">'+
     g.people.map(function(p, pi){ return memberBtn(p, gi, pi); }).join('')+'</div></div>';
 }
 function renderCommittee(){
@@ -387,7 +387,7 @@ function renderCommittee(){
   });
 }
 function openMember(g, p){
-  document.getElementById('member-role').textContent = g.icon + ' ' + g.role;
+  document.getElementById('member-role').textContent = g.role;
   document.getElementById('member-name').textContent = p.n;
   document.getElementById('member-photo').innerHTML = p.photo
     ? '<img src="img/team/'+escAttr(p.photo)+'" alt="'+escAttr(p.n)+'">'
