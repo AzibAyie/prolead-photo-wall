@@ -353,7 +353,7 @@ var COMMITTEE = [
   {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:'Aisyah Afina binti Md. Razak'}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim', photo:'kamalin.jpg'}]},
   {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri', photo:'aqmar.jpg'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham', photo:'adibzikri.jpg'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
-  {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak', photo:'nazhiym.jpg'}, {n:'Amalin Najwa binti Mokhtar', photo:'amalin.jpg'}, {n:'A’Atikah Nabilah binti Zulkarnain'}]},
+  {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak', photo:'nazhiym.jpg'}, {n:'Amalin Najwa binti Mokhtar', photo:'amalin.jpg'}, {n:'A’Atikah Nabilah binti Zulkarnain', photo:'atikah.jpg'}]},
   {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook', photo:'jabbar.jpg'}, {n:'Nurerdiena Safea binti Rizal', photo:'nurerdiena.jpg'}]}
 ];
 function initials(name){
