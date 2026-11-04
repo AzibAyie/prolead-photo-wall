@@ -350,7 +350,7 @@ var COMMITTEE = [
   {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
   {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
-  {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:'Aisyah Afina binti Md. Razak'}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
+  {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:'Aisyah Afina binti Md. Razak'}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim', photo:'kamalin.jpg'}]},
   {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri', photo:'aqmar.jpg'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
   {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Amalin Najwa binti Mokhtar'}, {n:'A’Atikah Nabilah binti Zulkarnain'}]},
