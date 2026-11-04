@@ -351,7 +351,7 @@ var COMMITTEE = [
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
   {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
   {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
-  {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
+  {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri', photo:'aqmar.jpg'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
   {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Wan Nur Asmaa’ binti Moidin'}, {n:''}]},
   {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
