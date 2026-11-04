@@ -354,7 +354,7 @@ var COMMITTEE = [
   {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri', photo:'aqmar.jpg'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
   {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Amalin Najwa binti Mokhtar', photo:'amalin.jpg'}, {n:'A’Atikah Nabilah binti Zulkarnain'}]},
-  {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
+  {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook', photo:'jabbar.jpg'}, {n:'Nurerdiena Safea binti Rizal'}]}
 ];
 function initials(name){
   return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').replace(/[’']/g, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
