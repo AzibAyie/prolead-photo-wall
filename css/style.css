@@ -1110,7 +1110,8 @@ body.show-mode .pm-buddy{display:none}
 .cm-row + .cm-row::before{content:""; position:absolute; top:-28px; left:50%; width:3px; height:28px; margin-left:-1.5px; background:var(--outline); border-radius:2px}
 .cm-card{background:#fff; border:3px solid var(--outline); border-radius:20px; box-shadow:0 5px 0 var(--outline); min-width:0; position:relative}
 .cm-card h3{margin:0; border-radius:17px 17px 0 0; padding:9px 14px; background:var(--sky); border-bottom:3px solid var(--outline); font-size:.98rem; color:var(--outline); text-align:center}
-.cm-top{width:min(100%, 520px)} .cm-pm{width:min(100%, 420px)}
+.cm-top{width:min(100%, 520px)} .cm-pm, .cm-pa{width:min(100%, 420px)}
+.cm-pa h3{background:#FFC2DA}
 .cm-pm h3{background:#FFD86B}
 .cm-row-lead .cm-card{flex:1 1 220px; max-width:280px}
 .cm-row-lead h3{background:#FFC2DA}
@@ -1151,7 +1152,10 @@ body.show-mode .pm-buddy{display:none}
 }
 /* committee tree lines on wide screens: PM -> bar -> each lead, and down again -> bar -> each team */
 @media (min-width:1101px){
-  .cm-row-unit{grid-template-columns:repeat(5, 1fr)}
+  .cm-row-unit{grid-template-columns:repeat(6, 1fr)}
+  .cm-row-unit .member{font-size:.78rem; padding:6px 7px; gap:7px}
+  .cm-row-unit .member-av{width:30px; height:30px; font-size:.7rem}
+  .cm-row-unit h3{font-size:.88rem; padding:9px 8px}
   .cm-row-lead::before, .cm-row-unit::before{height:15px}
   .cm-row-lead::after{content:""; position:absolute; top:-14px; bottom:0; left:50%; width:3px; margin-left:-1.5px; background:var(--outline)}
   .cm-row-lead .cm-card::before, .cm-row-unit .cm-card::before{content:""; position:absolute; top:-17px; left:50%; width:3px; height:15px; margin-left:-1.5px; background:var(--outline)}
@@ -1160,3 +1164,4 @@ body.show-mode .pm-buddy{display:none}
   .cm-row-lead .cm-card:first-child::after, .cm-row-unit .cm-card:first-child::after{left:50%}
   .cm-row-lead .cm-card:last-child::after, .cm-row-unit .cm-card:last-child::after{right:50%}
 }
+@media (min-width:1101px){ .cm-tree{width:min(1380px, calc(100vw - 80px)); margin-left:50%; transform:translateX(-50%)} }

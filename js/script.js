@@ -346,10 +346,10 @@ window.addEventListener('hashchange', route);
 var COMMITTEE = [
   {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
   {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
-  {role:'Project Assistant', tier:'lead', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=3'}]},
+  {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=3'}]},
   {role:'Secretary', tier:'lead', people:[{n:'Nur Yasmin Rasyiqah binti Mohd Yazriha'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
-  {role:'Head of Facilitator', tier:'lead', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
+  {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
   {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
   {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
@@ -377,6 +377,7 @@ function renderCommittee(){
   box.innerHTML = '<div class="cm-tree">'+
     '<div class="cm-row cm-row-top">'+tier('top')+'</div>'+
     '<div class="cm-row cm-row-pm">'+tier('pm')+'</div>'+
+    '<div class="cm-row cm-row-pa">'+tier('pa')+'</div>'+
     '<div class="cm-row cm-row-lead">'+tier('lead')+'</div>'+
     '<div class="cm-row cm-row-unit">'+tier('unit')+'</div></div>';
   box.querySelectorAll('[data-m]').forEach(function(b){
