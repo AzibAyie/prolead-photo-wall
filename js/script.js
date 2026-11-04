@@ -347,17 +347,17 @@ var COMMITTEE = [
   {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
   {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
   {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=4'}]},
-  {role:'Secretary', tier:'lead', people:[{n:'Nur Yasmin Rasyiqah binti Mohd Yazriha'}]},
+  {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
   {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
-  {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:''}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
+  {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:'Aisyah Afina binti Md. Razak'}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim'}]},
   {role:'Logistic & Food', tier:'unit', people:[{n:'Adam Iman bin Zahairi'}, {n:'Mohamad Ali Jefri bin Asbullah Nasir'}, {n:'Aqmar Khadijah Umairah binti Mohd Zamri', photo:'aqmar.jpg'}, {n:'Muhammad Adib Zikri bin Kamarul Idzham'}]},
   {role:'Technical', tier:'unit', people:[{n:'Eddruce bin Badrul Hisham'}]},
-  {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Wan Nur Asmaa’ binti Moidin'}, {n:''}]},
+  {role:'Activity', tier:'unit', people:[{n:'Hazrul Amin bin Harul Azman', photo:'hazrul.jpg'}, {n:'Muhammad Nazhiym Zuhayri bin Abd Razak'}, {n:'Amalin Najwa binti Mokhtar'}, {n:'A’Atikah Nabilah binti Zulkarnain'}]},
   {role:'Protocol & Safety', tier:'unit', people:[{n:'Alif Abdul Jabbar bin Mohamed Farook'}, {n:'Nurerdiena Safea binti Rizal'}]}
 ];
 function initials(name){
-  return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
+  return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').replace(/[’']/g, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
     .slice(0, 2).map(function(w){ return w[0]; }).join('');
 }
 function memberBtn(p, gi, pi){
