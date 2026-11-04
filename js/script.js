@@ -347,7 +347,7 @@ var COMMITTEE = [
   {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
   {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
   {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=5'}]},
-  {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi'}]},
+  {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi', photo:'durrah.jpg'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme', photo:'hanif.jpg'}]},
   {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
   {role:'Media & Documentation', tier:'unit', people:[{n:'Nur Nadhirah Nabilah binti Roslee'}, {n:'Aisyah Afina binti Md. Razak'}, {n:'Nur Shazea Qhadra binti Mohd Saifullyzan'}, {n:'Kamalin Mastura binti Abdul Alim', photo:'kamalin.jpg'}]},
