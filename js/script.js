@@ -346,7 +346,7 @@ window.addEventListener('hashchange', route);
 var COMMITTEE = [
   {role:'Advisors', tier:'top', people:[{n:'Puan Nurul Asikin binti Roslan'}, {n:'Encik Nazrul Ikhwan bin Nizam'}]},
   {role:'Project Manager', tier:'pm', people:[{n:'Adam Ridhwan bin Safie'}]},
-  {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=4'}]},
+  {role:'Project Assistant', tier:'pa', people:[{n:'Anis Nabihah binti Jalaludin Albakri', photo:'anis.jpg?v=5'}]},
   {role:'Secretary', tier:'lead', people:[{n:'Durrah ’Izzati binti Nazmi'}]},
   {role:'Treasurer', tier:'lead', people:[{n:'Muhammad Hanif Danial bin Jurayme'}]},
   {role:'Head of Facilitator', tier:'unit', people:[{n:'Muhammad Hidayatullah bin Zahari'}]},
