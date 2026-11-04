@@ -946,8 +946,9 @@ try{ var rawPlayer = localStorage.getItem(PLAYER_KEY); if(rawPlayer) player = Ob
 function savePlayer(){ try{ localStorage.setItem(PLAYER_KEY, JSON.stringify(player)); }catch(e){} }
 
 var LEVEL_XP = 200;
-var TITLES = ['Sprout Sharer','Pixel Pal','Snapshot Star','Gallery Guru','Legendary Lens'];
-function levelOf(xp){ return Math.floor(xp/LEVEL_XP) + 1; }
+var MAX_LEVEL = 10;   // Mochi gets a new look at every level
+var TITLES = ['Sprout Sharer','Blossom Buddy','Snapshot Star','Gallery Guru','Pixel DJ','Camp Captain','Super Snapper','Royal Reporter','Mochi Master','Legendary Lens'];
+function levelOf(xp){ return Math.min(MAX_LEVEL, Math.floor(xp/LEVEL_XP) + 1); }
 function titleOf(lvl){ return TITLES[Math.min(lvl, TITLES.length) - 1]; }
 
 var BADGES = [
@@ -967,12 +968,21 @@ function grantBadge(id){
   return badge(id);
 }
 
+var hudShown = false;
 function renderHud(){
-  var lvl = levelOf(player.xp), into = player.xp % LEVEL_XP;
+  var lvl = levelOf(player.xp), max = lvl >= MAX_LEVEL, into = max ? LEVEL_XP : player.xp % LEVEL_XP;
   document.getElementById('hud-level').textContent = lvl;
+  document.getElementById('hud-level').classList.toggle('max', max);
   document.getElementById('hud-title').textContent = titleOf(lvl);
-  document.getElementById('hud-xp-num').textContent = into + ' / ' + LEVEL_XP + ' XP';
+  document.getElementById('hud-xp-num').textContent = max ? 'MAX LEVEL' : into + ' / ' + LEVEL_XP + ' XP';
   document.getElementById('hud-xp-bar').style.width = (into / LEVEL_XP * 100) + '%';
+  var oldLook = +mochi.dataset.lvl;
+  mochi.dataset.lvl = lvl;
+  if(lvl > oldLook && hudShown){   // Mochi evolves into its new look
+    bounce('evolve');
+    setTimeout(function(){ say(lvl >= MAX_LEVEL ? 'MAX LEVEL! I\'m the Legendary Mochi King now! 👑✨' : 'Whoa, I evolved! ✨ Do you like my new look?'); }, 600);
+  }
+  hudShown = true;
   var snd = document.getElementById('sound-toggle');
   snd.textContent = player.sound ? '🔊' : '🔇';
   snd.setAttribute('aria-pressed', String(player.sound));
@@ -1226,10 +1236,10 @@ function say(text){
   bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
 }
 function bounce(cls){
-  mochi.classList.remove('boing','jump','shake'); void mochi.offsetWidth; mochi.classList.add(cls);
+  mochi.classList.remove('boing','jump','shake','evolve'); void mochi.offsetWidth; mochi.classList.add(cls);
 }
 mochi.addEventListener('animationend', function(e){
-  if(e.target === mochi) mochi.classList.remove('boing','jump','shake');
+  if(e.target === mochi) mochi.classList.remove('boing','jump','shake','evolve');
 });
 function floater(text, cls){
   var el = document.createElement('span');
@@ -1726,7 +1736,7 @@ function finishQuest(stickerCount){
   var newLevel = levelOf(player.xp);
   var lu = document.getElementById('levelup');
   lu.hidden = newLevel <= oldLevel;
-  if(newLevel > oldLevel) lu.textContent = '⬆️ LEVEL UP! You\'re now level ' + newLevel + ': ' + titleOf(newLevel);
+  if(newLevel > oldLevel) lu.textContent = '⬆️ LEVEL UP! You\'re now level ' + newLevel + ': ' + titleOf(newLevel) + '. Mochi has a new look!';
 
   document.getElementById('new-badges').innerHTML = unlocked.map(function(b){
     return '<div class="new-badge"><span>'+b.icon+'</span><div><b>'+esc(b.name)+'</b><small>'+esc(b.desc)+'</small></div></div>';

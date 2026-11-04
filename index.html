@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261105a">
+<link rel="stylesheet" href="css/style.css?v=20261105b">
 </head>
 <body>
 <div class="blob-field">
@@ -198,10 +198,12 @@
       <div class="quest-grid">
         <aside class="stage" id="stage">
           <div class="bubble" id="mochi-bubble" aria-live="polite">Hi! I'm Mochi. I'm sooo hungry for photos!</div>
-          <button type="button" class="mochi-btn" id="mochi" data-mood="idle" aria-label="Poke Mochi">
+          <button type="button" class="mochi-btn" id="mochi" data-mood="idle" data-lvl="1" aria-label="Poke Mochi">
             <svg class="mochi-svg" viewBox="0 0 200 190" width="170" height="162" aria-hidden="true">
-              <path d="M78 38L82 12L93 25L100 8L107 25L118 12L122 38Z" fill="#FFD86B" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/>
-              <circle cx="100" cy="27" r="3.5" fill="#FF9EC7"/>
+              <defs><radialGradient id="mAura"><stop offset=".55" stop-color="#FFE58F" stop-opacity=".9"/><stop offset="1" stop-color="#FFE58F" stop-opacity="0"/></radialGradient></defs>
+              <circle class="m-acc m-aura L10" cx="100" cy="108" r="100" fill="url(#mAura)"/>
+              <path class="m-acc m-cape L7 L8 L9 L10" d="M52 62Q-14 118 0 186Q100 198 200 186Q214 118 148 62Z" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/>
+              <path class="m-acc L10" d="M2 186Q100 199 198 186" stroke="#fff" stroke-width="10" stroke-linecap="round" fill="none"/>
               <path class="m-body" d="M100 30C152 30 186 78 186 122C186 162 150 178 100 178C50 178 14 162 14 122C14 78 48 30 100 30Z"/>
               <ellipse cx="66" cy="64" rx="16" ry="8" fill="#fff" transform="rotate(-28 66 64)"/>
               <ellipse class="m-cheek" cx="50" cy="132" rx="13" ry="8"/>
@@ -222,6 +224,18 @@
               <g class="m-mouth m-happy"><path d="M85 131Q100 156 115 131Z" fill="#5B2A35"/><path d="M92 142Q100 149 108 142Q100 138 92 142Z" fill="#F27B92"/></g>
               <path class="m-mouth m-sad" d="M89 143Q100 132 111 143" stroke="#1D2B24" stroke-width="4.5" fill="none" stroke-linecap="round"/>
               <ellipse class="m-mouth m-think" cx="105" cy="139" rx="5" ry="6" fill="#5B2A35"/>
+              <g class="m-acc L1"><path d="M100 34Q98 24 100 16" stroke="#3E9C7A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M100 20Q86 6 76 16Q88 26 100 20Z" fill="#8FE3C4" stroke="#1D2B24" stroke-width="3" stroke-linejoin="round"/><path d="M100 20Q116 4 126 13Q114 26 100 20Z" fill="#8FE3C4" stroke="#1D2B24" stroke-width="3" stroke-linejoin="round"/></g>
+              <g class="m-acc L2"><path d="M100 34Q97 22 100 12" stroke="#3E9C7A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M99 26Q86 18 82 26Q92 32 99 26Z" fill="#8FE3C4" stroke="#1D2B24" stroke-width="2.5"/><circle cx="100.0" cy="-2.0" r="6.5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2.5"/><circle cx="107.6" cy="3.5" r="6.5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2.5"/><circle cx="104.7" cy="12.5" r="6.5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2.5"/><circle cx="95.3" cy="12.5" r="6.5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2.5"/><circle cx="92.4" cy="3.5" r="6.5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2.5"/><circle cx="100" cy="6" r="5" fill="#FFD86B" stroke="#1D2B24" stroke-width="2.5"/></g>
+              <path class="m-acc L3" d="M140.0 35.0 L144.1 44.3 L154.3 45.4 L146.7 52.2 L148.8 62.1 L140.0 57.0 L131.2 62.1 L133.3 52.2 L125.7 45.4 L135.9 44.3Z" fill="#FFD86B" stroke="#1D2B24" stroke-width="3" stroke-linejoin="round"/>
+              <g class="m-acc L4"><path d="M90 16Q92 8 98 10" stroke="#1D2B24" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="96" cy="32" rx="46" ry="15" transform="rotate(-8 96 32)" fill="#E8505B" stroke="#1D2B24" stroke-width="3.5"/><ellipse cx="80" cy="28" rx="12" ry="4" transform="rotate(-8 80 28)" fill="#fff" opacity=".35"/></g>
+              <g class="m-acc L5"><path d="M24 100Q100 -56 176 100" stroke="#1D2B24" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M24 100Q100 -56 176 100" stroke="#7CC6F2" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="8" y="84" width="26" height="40" rx="12" fill="#FF9EC7" stroke="#1D2B24" stroke-width="3.5"/><rect x="166" y="84" width="26" height="40" rx="12" fill="#FF9EC7" stroke="#1D2B24" stroke-width="3.5"/></g>
+              <g class="m-acc L6"><path d="M58 42Q54 6 100 4Q146 6 142 42Z" fill="#fff" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/><rect x="56" y="32" width="88" height="12" rx="4" fill="#2E4C7C" stroke="#1D2B24" stroke-width="3"/><path d="M54 44Q100 60 146 44" stroke="#1D2B24" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M100.0 14.0 L102.4 18.8 L107.6 19.5 L103.8 23.2 L104.7 28.5 L100.0 26.0 L95.3 28.5 L96.2 23.2 L92.4 19.5 L97.6 18.8Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="2"/></g>
+              <g class="m-acc L7"><path d="M40 74Q100 46 160 74" stroke="#1D2B24" stroke-width="13" fill="none" stroke-linecap="round"/><path d="M40 74Q100 46 160 74" stroke="#E8505B" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M160 72Q174 60 188 64M160 74Q176 80 186 92" stroke="#1D2B24" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M160 72Q174 60 188 64M160 74Q176 80 186 92" stroke="#E8505B" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M100.0 50.0 L102.7 56.3 L109.5 56.9 L104.4 61.4 L105.9 68.1 L100.0 64.6 L94.1 68.1 L95.6 61.4 L90.5 56.9 L97.3 56.3Z" fill="#FFD86B" stroke="#1D2B24" stroke-width="2.5" stroke-linejoin="round"/></g>
+              <g class="m-acc L8"><path d="M68 42L74 22L86 32L100 8L114 32L126 22L132 42Q100 34 68 42Z" fill="#E6E9F2" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/><circle cx="100" cy="27" r="5" fill="#FF9EC7" stroke="#1D2B24" stroke-width="2"/><circle cx="74" cy="20" r="3" fill="#7CC6F2"/><circle cx="126" cy="20" r="3" fill="#7CC6F2"/></g>
+              <g class="m-acc L9"><path d="M78 38L82 12L93 25L100 8L107 25L118 12L122 38Z" fill="#FFD86B" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/><circle cx="100" cy="27" r="3.5" fill="#FF9EC7"/></g>
+              <g class="m-acc L10"><path d="M64 42L66 2L84 20L100 -8L116 20L134 2L136 42Q100 34 64 42Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="3.5" stroke-linejoin="round"/><circle cx="66" cy="0" r="4.5" fill="#FFD23F" stroke="#1D2B24" stroke-width="2.5"/><circle cx="100" cy="-10" r="4.5" fill="#FFD23F" stroke="#1D2B24" stroke-width="2.5"/><circle cx="134" cy="0" r="4.5" fill="#FFD23F" stroke="#1D2B24" stroke-width="2.5"/><circle cx="100" cy="27" r="6" fill="#E8505B" stroke="#1D2B24" stroke-width="2"/><circle cx="80" cy="31" r="4" fill="#7CC6F2" stroke="#1D2B24" stroke-width="2"/><circle cx="120" cy="31" r="4" fill="#8FE3C4" stroke="#1D2B24" stroke-width="2"/></g>
+              <g class="m-acc L3 L4 L5 L6 L7 L8 L9 L10"><rect x="136" y="150" width="34" height="24" rx="6" fill="#4A4E5E" stroke="#1D2B24" stroke-width="3"/><rect x="142" y="145" width="11" height="7" rx="2" fill="#4A4E5E" stroke="#1D2B24" stroke-width="2.5"/><circle cx="153" cy="162" r="7.5" fill="#7CC6F2" stroke="#1D2B24" stroke-width="3"/><circle cx="155" cy="160" r="2.2" fill="#fff"/><circle cx="164" cy="155" r="2" fill="#FFD86B"/></g>
+              <path class="m-acc m-spark L9 L10" transform="translate(22 40) scale(1)" d="M0 -9Q2 -2 9 0Q2 2 0 9Q-2 2 -9 0Q-2 -2 0 -9Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="2" style="animation-delay:0s"/><path class="m-acc m-spark L9 L10" transform="translate(180 46) scale(0.8)" d="M0 -9Q2 -2 9 0Q2 2 0 9Q-2 2 -9 0Q-2 -2 0 -9Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="2" style="animation-delay:0.5s"/><path class="m-acc m-spark L9 L10" transform="translate(8 150) scale(0.7)" d="M0 -9Q2 -2 9 0Q2 2 0 9Q-2 2 -9 0Q-2 -2 0 -9Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="2" style="animation-delay:1s"/><path class="m-acc m-spark L9 L10" transform="translate(194 140) scale(1)" d="M0 -9Q2 -2 9 0Q2 2 0 9Q-2 2 -9 0Q-2 -2 0 -9Z" fill="#FFD23F" stroke="#1D2B24" stroke-width="2" style="animation-delay:1.5s"/>
             </svg>
           </button>
           <div class="mochi-shadow"></div>
@@ -481,7 +495,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous"></script>
-<script src="js/firebase-config.js?v=20261105a"></script>
-<script src="js/script.js?v=20261105a"></script>
+<script src="js/firebase-config.js?v=20261105b"></script>
+<script src="js/script.js?v=20261105b"></script>
 </body>
 </html>
