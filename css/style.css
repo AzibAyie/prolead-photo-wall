@@ -1165,3 +1165,6 @@ body.show-mode .pm-buddy{display:none}
   .cm-row-lead .cm-card:last-child::after, .cm-row-unit .cm-card:last-child::after{right:50%}
 }
 @media (min-width:1101px){ .cm-tree{width:min(1380px, calc(100vw - 80px)); margin-left:50%; transform:translateX(-50%)} }
+/* duty lists: alternate white / soft blue rows */
+.duty-card tbody tr:nth-child(odd) td{background:#fff}
+.duty-card tbody tr:nth-child(even) td{background:#EAF6FF}
