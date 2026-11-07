@@ -1086,10 +1086,10 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
-/* background music: the song "Sesi Potret" (audio/sesi-potret.mp3) */
+/* background music: "Berapa Kali Kita Akan Saling Memaafkan" (audio/berapa-kali.mp3) */
 var music = {on: player.music !== false, playing:false, timer:null, bus:null, session:null, nextBar:0, bar:0};
-// Background song: "Sesi Potret". Browsers block sound until the visitor taps, so it starts on the first tap.
-var song = new Audio('audio/sesi-potret.mp3');
+// Background song: "Berapa Kali Kita Akan Saling Memaafkan" (Pamungkas). Browsers block sound until the visitor taps, so it starts on the first tap.
+var song = new Audio('audio/berapa-kali.mp3');
 song.loop = true; song.preload = 'none'; song.volume = 0.35;
 song.addEventListener('playing', function(){ music.playing = true; renderMusicBtn(); });
 song.addEventListener('pause', function(){ music.playing = false; renderMusicBtn(); });
@@ -1106,7 +1106,7 @@ function renderMusicBtn(){
     btn.classList.toggle('playing', music.playing);
     btn.classList.toggle('waiting', music.on && !music.playing);
     btn.setAttribute('aria-pressed', String(music.on));
-    btn.title = music.on ? 'Sesi Potret: on (tap to turn off)' : 'Sesi Potret: off (tap to turn on)';
+    btn.title = music.on ? 'Song: on (tap to turn off)' : 'Song: off (tap to turn on)';
   });
 }
 function onMusicBtn(e){
