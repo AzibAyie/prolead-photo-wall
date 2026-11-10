@@ -149,7 +149,7 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin() && doc == 'site'
         && request.resource.data.keys().hasOnly(['song'])
-        && request.resource.data.song in ['berapa-kali', 'sesi-potret', 'carefree', 'wholesome', 'heroic-age'];
+        && request.resource.data.song in ['berapa-kali', 'sesi-potret', 'carefree', 'wholesome', 'heroic-age', 'fluffing-a-duck', 'monkeys-spinning'];
     }
 
     // committee photos uploaded by the admin (they replace the built-in photos); everyone can see them

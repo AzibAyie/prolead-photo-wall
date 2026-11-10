@@ -1120,7 +1120,9 @@ var SONGS = [
   {id:'sesi-potret', name:'Sesi Potret', by:'feat. Ari Lesmana', mood:'Nostalgic'},
   {id:'carefree', name:'Carefree', by:'Kevin MacLeod', mood:'Cheerful & fun', credit:KM},
   {id:'wholesome', name:'Wholesome', by:'Kevin MacLeod', mood:'Calm & warm', credit:KM},
-  {id:'heroic-age', name:'Heroic Age', by:'Kevin MacLeod', mood:'Epic adventure', credit:KM}
+  {id:'heroic-age', name:'Heroic Age', by:'Kevin MacLeod', mood:'Epic adventure', credit:KM},
+  {id:'fluffing-a-duck', name:'Fluffing a Duck', by:'Kevin MacLeod', mood:'Cheerful & fun', credit:KM},
+  {id:'monkeys-spinning', name:'Monkeys Spinning Monkeys', by:'Kevin MacLeod', mood:'Cheerful & fun', credit:KM}
 ];
 var DEFAULT_SONG = 'berapa-kali', SONG_KEY = 'prolead_song';
 function songById(id){ return SONGS.find(function(s){ return s.id === id; }) || songById(DEFAULT_SONG); }
@@ -1786,7 +1788,7 @@ function renderAdminSongs(){
       '<div class="song-info"><b>'+esc(s.name)+'</b><span>'+esc(s.by)+' · <i>'+esc(s.mood)+'</i></span></div>'+
       (on ? '<span class="song-now">Playing now</span>' : '<button type="button" class="btn btn-sm btn-accent" data-use="'+s.id+'">Use this song</button>')+
     '</div>';
-  }).join('') + '<p class="hint" style="margin-top:12px">The three Kevin MacLeod songs are free to use. While one of them is playing, a small credit line shows at the bottom of the page, as their licence asks.</p>';
+  }).join('') + '<p class="hint" style="margin-top:12px">The Kevin MacLeod songs are free to use. While one of them is playing, a small credit line shows at the bottom of the page, as their licence asks.</p>';
   box.querySelectorAll('[data-preview]').forEach(function(b){
     b.onclick = function(){
       var id = b.dataset.preview;
