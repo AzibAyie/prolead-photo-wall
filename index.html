@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Gaegu:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261111b">
+<link rel="stylesheet" href="css/style.css?v=20261111c">
 </head>
 <body>
 <div class="blob-field">
@@ -435,6 +435,32 @@
 </div>
 <div class="zoomed" id="zoom-scrim"><img id="zoom-img" alt=""></div>
 
+<!-- Admin: adjust a committee photo -->
+<div class="scrim" id="crop-scrim">
+  <div class="modal crop-modal" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+    <div class="modal-body">
+      <h3 id="crop-title" style="margin:0">Adjust photo</h3>
+      <p class="hint" id="crop-who" style="margin:4px 0 14px"></p>
+      <div class="crop-shapes" id="crop-shapes">
+        <button type="button" data-ratio="0.8">Portrait</button>
+        <button type="button" data-ratio="1">Square</button>
+        <button type="button" data-ratio="0">Original</button>
+      </div>
+      <div class="crop-stage" id="crop-stage"><img id="crop-img" alt="" draggable="false"></div>
+      <label class="crop-zoom"><span>Zoom</span>
+        <button type="button" class="crop-step" id="crop-out" aria-label="Zoom out">−</button>
+        <input type="range" id="crop-zoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+        <button type="button" class="crop-step" id="crop-in" aria-label="Zoom in">+</button>
+      </label>
+      <p class="hint crop-tip">Drag the photo to move it inside the frame.</p>
+      <div class="crop-btns">
+        <button type="button" class="btn btn-ghost btn-sm" id="crop-cancel">Cancel</button>
+        <button type="button" class="btn btn-accent btn-sm" id="crop-save">Save photo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Committee member photo -->
 <div class="scrim" id="member-scrim">
   <div class="modal modal-pos member-modal" role="dialog" aria-modal="true" aria-labelledby="member-name">
@@ -536,7 +562,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous"></script>
-<script src="js/firebase-config.js?v=20261111b"></script>
-<script src="js/script.js?v=20261111b"></script>
+<script src="js/firebase-config.js?v=20261111c"></script>
+<script src="js/script.js?v=20261111c"></script>
 </body>
 </html>

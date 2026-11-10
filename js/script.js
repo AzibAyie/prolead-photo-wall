@@ -1824,12 +1824,19 @@ function renderAdminTeam(){
         '<div class="team-thumb">'+(src ? '<img src="'+escAttr(src)+'" alt="">' : '<span>'+esc(initials(p.n))+'</span>')+'</div>'+
         '<div class="team-info"><span class="team-role">'+esc(g.role)+'</span><b>'+esc(p.n)+'</b><small>'+(custom ? 'Changed by admin' : (p.photo ? 'Original photo' : 'No photo yet'))+'</small>'+
         '<div class="team-btns"><button type="button" class="btn btn-sm btn-accent" data-change="'+escAttr(key)+'">Change photo</button>'+
+        (src ? '<button type="button" class="btn btn-sm btn-ghost" data-adjust="'+escAttr(key)+'">Adjust</button>' : '')+
         (custom ? '<button type="button" class="btn btn-sm btn-ghost" data-reset="'+escAttr(key)+'">Reset</button>' : '')+'</div></div>'+
       '</div>';
     }).join('');
   }).join('') + '</div>';
   box.querySelectorAll('[data-change]').forEach(function(b){
     b.onclick = function(){ teamTarget = b.dataset.change; var f = document.getElementById('team-file'); f.value = ''; f.click(); };
+  });
+  box.querySelectorAll('[data-adjust]').forEach(function(b){
+    b.onclick = function(){
+      var p = memberByKey(b.dataset.adjust);
+      if(p) openCropper(b.dataset.adjust, memberPhoto(p));
+    };
   });
   box.querySelectorAll('[data-reset]').forEach(function(b){
     b.onclick = function(){
@@ -1850,18 +1857,12 @@ function saveTeamPhoto(key, dataUrl){
   var ref = cloud.db.collection('team').doc(key);
   return dataUrl ? ref.set({photo:dataUrl}) : ref.delete();
 }
-// shrink the photo (max 720 x 900, JPEG) so it fits in the database
-function teamPhotoData(img){
-  var k = Math.min(1, 720 / img.naturalWidth, 900 / img.naturalHeight);
-  var cv = document.createElement('canvas');
-  cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
-  var ctx = cv.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
-  ctx.drawImage(img, 0, 0, cv.width, cv.height);
-  for(var q = .88; q > .4; q -= .08){
-    var out = cv.toDataURL('image/jpeg', q);
-    if(out.length < 600000) return out;
-  }
+function memberByKey(key){
+  for(var i = 0; i < COMMITTEE.length; i++)
+    for(var k = 0; k < COMMITTEE[i].people.length; k++){
+      var p = COMMITTEE[i].people[k];
+      if(p.n && memberKey(p.n) === key) return p;
+    }
   return null;
 }
 document.getElementById('team-file').addEventListener('change', function(){
@@ -1869,19 +1870,129 @@ document.getElementById('team-file').addEventListener('change', function(){
   if(!file || !key || !isAdmin) return;
   if(!/^image\//.test(file.type)){ toast('Please choose a photo', '⚠️'); return; }
   var reader = new FileReader();
-  reader.onload = function(e){
-    var img = new Image();
-    img.onload = function(){
-      var data = teamPhotoData(img);
-      if(!data){ toast('That photo is too big. Try a smaller one.', '⚠️'); return; }
-      toast('Uploading photo…', '⏳');
-      saveTeamPhoto(key, data).then(function(){ toast('Photo updated for everyone', '✅'); })
-        .catch(function(err){ console.error(err); toast('Could not save the photo. Try again.', '⚠️'); });
-    };
-    img.onerror = function(){ toast('Could not open that photo', '⚠️'); };
-    img.src = e.target.result;
-  };
+  reader.onload = function(e){ openCropper(key, e.target.result); };
   reader.readAsDataURL(file);
+});
+
+// --- Photo editor: pick the frame shape, zoom and drag, then save the framed part ---
+var crop = {key:null, img:null, ratio:.8, W:0, H:0, base:1, zoom:1, x:0, y:0};
+var cropScrim = document.getElementById('crop-scrim'), cropStage = document.getElementById('crop-stage'),
+    cropImg = document.getElementById('crop-img'), cropZoom = document.getElementById('crop-zoom');
+function openCropper(key, src){
+  var p = memberByKey(key);
+  var img = new Image();
+  img.onload = function(){
+    crop.key = key; crop.img = img; crop.ratio = .8;
+    document.getElementById('crop-who').textContent = p ? p.n : '';
+    cropImg.src = img.src;
+    cropScrim.classList.add('show');
+    cropLayout(true);
+  };
+  img.onerror = function(){ toast('Could not open that photo', '⚠️'); };
+  img.src = src;
+}
+function closeCropper(){ cropScrim.classList.remove('show'); crop.img = null; }
+// size the frame to the chosen shape and fit the photo so it fills the frame
+function cropLayout(reset){
+  var iw = crop.img.naturalWidth, ih = crop.img.naturalHeight;
+  var r = crop.ratio || iw / ih;
+  var box = cropStage.parentNode, cs = getComputedStyle(box);
+  var inner = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  var maxW = Math.min(inner, 360), maxH = Math.min(innerHeight * .5, 420);
+  var W = maxW, H = W / r;
+  if(H > maxH){ H = maxH; W = H * r; }
+  crop.W = Math.round(W); crop.H = Math.round(H);
+  cropStage.style.width = crop.W + 'px'; cropStage.style.height = crop.H + 'px';
+  crop.base = Math.max(crop.W / iw, crop.H / ih);
+  if(reset){ crop.zoom = 1; cropZoom.value = 1; }
+  var s = crop.base * crop.zoom;
+  if(reset){ crop.x = (crop.W - iw * s) / 2; crop.y = (crop.H - ih * s) / 2; }
+  document.querySelectorAll('#crop-shapes button').forEach(function(b){
+    var on = +b.dataset.ratio === crop.ratio;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+  });
+  cropDraw();
+}
+function cropDraw(){
+  var s = crop.base * crop.zoom, iw = crop.img.naturalWidth * s, ih = crop.img.naturalHeight * s;
+  crop.x = Math.min(0, Math.max(crop.W - iw, crop.x));   // the photo always covers the whole frame
+  crop.y = Math.min(0, Math.max(crop.H - ih, crop.y));
+  cropImg.style.width = crop.img.naturalWidth + 'px';
+  cropImg.style.transform = 'translate(' + crop.x + 'px,' + crop.y + 'px) scale(' + s + ')';
+}
+function cropSetZoom(z){
+  z = Math.max(1, Math.min(4, z));
+  var old = crop.base * crop.zoom, now = crop.base * z, cx = crop.W / 2, cy = crop.H / 2;
+  crop.x = cx - (cx - crop.x) * now / old;   // zoom around the middle of the frame
+  crop.y = cy - (cy - crop.y) * now / old;
+  crop.zoom = z; cropZoom.value = z;
+  cropDraw();
+}
+document.querySelectorAll('#crop-shapes button').forEach(function(b){
+  b.addEventListener('click', function(){ crop.ratio = +b.dataset.ratio; cropLayout(true); });
+});
+cropZoom.addEventListener('input', function(){ cropSetZoom(+cropZoom.value); });
+document.getElementById('crop-in').addEventListener('click', function(){ cropSetZoom(crop.zoom + .2); });
+document.getElementById('crop-out').addEventListener('click', function(){ cropSetZoom(crop.zoom - .2); });
+cropStage.addEventListener('wheel', function(e){ e.preventDefault(); cropSetZoom(crop.zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, {passive:false});
+// drag with mouse or finger; two fingers pinch to zoom
+var cropPtrs = {}, cropPinch = null;
+cropStage.addEventListener('pointerdown', function(e){
+  cropStage.setPointerCapture(e.pointerId);
+  cropPtrs[e.pointerId] = {x:e.clientX, y:e.clientY};
+  cropStage.classList.add('dragging');
+});
+cropStage.addEventListener('pointermove', function(e){
+  var prev = cropPtrs[e.pointerId];
+  if(!prev) return;
+  var ids = Object.keys(cropPtrs);
+  if(ids.length === 2){
+    cropPtrs[e.pointerId] = {x:e.clientX, y:e.clientY};
+    var a = cropPtrs[ids[0]], b = cropPtrs[ids[1]], d = Math.hypot(a.x - b.x, a.y - b.y);
+    if(cropPinch) cropSetZoom(crop.zoom * d / cropPinch);
+    cropPinch = d;
+    return;
+  }
+  crop.x += e.clientX - prev.x; crop.y += e.clientY - prev.y;
+  cropPtrs[e.pointerId] = {x:e.clientX, y:e.clientY};
+  cropDraw();
+});
+function cropUp(e){
+  delete cropPtrs[e.pointerId]; cropPinch = null;
+  if(!Object.keys(cropPtrs).length) cropStage.classList.remove('dragging');
+}
+cropStage.addEventListener('pointerup', cropUp);
+cropStage.addEventListener('pointercancel', cropUp);
+document.getElementById('crop-cancel').addEventListener('click', closeCropper);
+cropScrim.addEventListener('click', function(e){ if(e.target === cropScrim) closeCropper(); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && cropScrim.classList.contains('show')) closeCropper(); });
+addEventListener('resize', function(){ if(crop.img && cropScrim.classList.contains('show')) cropLayout(true); });
+// cut out the framed part (max 800 x 1000, JPEG) so it fits in the database
+function cropData(){
+  var s = crop.base * crop.zoom;
+  var sx = -crop.x / s, sy = -crop.y / s, sw = crop.W / s, sh = crop.H / s;
+  var k = Math.min(1, 800 / sw, 1000 / sh);
+  var cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.round(sw * k)); cv.height = Math.max(1, Math.round(sh * k));
+  var ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(crop.img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+  for(var q = .88; q > .4; q -= .08){
+    var out = cv.toDataURL('image/jpeg', q);
+    if(out.length < 600000) return out;
+  }
+  return null;
+}
+document.getElementById('crop-save').addEventListener('click', function(){
+  if(!crop.img || !isAdmin) return;
+  var data, btn = this;
+  try{ data = cropData(); }catch(err){ console.error(err); data = null; }
+  if(!data){ toast('Could not prepare that photo. Try a smaller one.', '⚠️'); return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  saveTeamPhoto(crop.key, data).then(function(){ toast('Photo updated for everyone', '✅'); closeCropper(); })
+    .catch(function(err){ console.error(err); toast('Could not save the photo. Try again.', '⚠️'); })
+    .then(function(){ btn.disabled = false; btn.textContent = 'Save photo'; });
 });
 if(cloud){
   document.getElementById('admin-email').hidden = false;

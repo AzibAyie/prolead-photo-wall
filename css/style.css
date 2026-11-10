@@ -1206,3 +1206,21 @@ body.show-mode .pm-buddy{display:none}
   .song-row .btn, .song-now{margin-left:54px}
   .team-grid{grid-template-columns:1fr}
 }
+
+/* ===== admin photo editor ===== */
+.crop-modal{max-width:420px}
+.crop-shapes{display:flex; gap:6px; margin-bottom:14px}
+.crop-shapes button{flex:1; padding:8px 6px; border:2.5px solid var(--outline); border-radius:999px; background:#fff; font:inherit; font-weight:800; font-size:.82rem; color:var(--outline); cursor:pointer}
+.crop-shapes button.on{background:var(--sun)}
+.crop-shapes button:focus-visible, .crop-step:focus-visible{outline:3px solid var(--purple); outline-offset:2px}
+.crop-stage{position:relative; margin:0 auto; overflow:hidden; border:3px solid var(--outline); border-radius:14px; background:#EEE8F5; touch-action:none; cursor:grab; user-select:none}
+.crop-stage.dragging{cursor:grabbing}
+.crop-stage img{position:absolute; left:0; top:0; max-width:none; transform-origin:0 0; pointer-events:none; user-select:none}
+.crop-stage::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(to right, transparent 33.2%, rgba(255,255,255,.55) 33.3%, rgba(255,255,255,.55) 33.6%, transparent 33.7%, transparent 66.4%, rgba(255,255,255,.55) 66.5%, rgba(255,255,255,.55) 66.8%, transparent 66.9%),
+             linear-gradient(to bottom, transparent 33.2%, rgba(255,255,255,.55) 33.3%, rgba(255,255,255,.55) 33.6%, transparent 33.7%, transparent 66.4%, rgba(255,255,255,.55) 66.5%, rgba(255,255,255,.55) 66.8%, transparent 66.9%)}
+.crop-zoom{display:flex; align-items:center; gap:8px; margin-top:14px; font-weight:800; font-size:.85rem; color:var(--outline)}
+.crop-zoom input{flex:1; accent-color:var(--bubble)}
+.crop-step{flex:none; width:32px; height:32px; border-radius:50%; border:2.5px solid var(--outline); background:#fff; font:inherit; font-weight:800; font-size:1.05rem; line-height:1; color:var(--outline); cursor:pointer}
+.crop-tip{margin:8px 0 0; text-align:center}
+.crop-btns{display:flex; justify-content:flex-end; gap:8px; margin-top:16px}
