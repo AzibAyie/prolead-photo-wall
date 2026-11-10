@@ -144,6 +144,25 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
+    // site settings: everyone can read the chosen background song, only the admin can change it
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin() && doc == 'site'
+        && request.resource.data.keys().hasOnly(['song'])
+        && request.resource.data.song in ['berapa-kali', 'sesi-potret', 'carefree', 'wholesome', 'heroic-age'];
+    }
+
+    // committee photos uploaded by the admin (they replace the built-in photos); everyone can see them
+    match /team/{key} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && key.matches('^[a-z0-9-]{1,80}$')
+        && request.resource.data.keys().hasOnly(['photo'])
+        && request.resource.data.photo is string && request.resource.data.photo.size() < 600000
+        && request.resource.data.photo.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$');
+      allow delete: if isAdmin();
+    }
+
     // everything else is closed
     match /{document=**} {
       allow read, write: if false;

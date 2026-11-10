@@ -360,10 +360,21 @@ function initials(name){
   return name.replace(/\b(bin|binti)\b.*$/i, '').replace(/^(Puan|Encik)\s+/i, '').replace(/[’']/g, '').trim().split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); })
     .slice(0, 2).map(function(w){ return w[0]; }).join('');
 }
+// Photos the admin uploaded (saved in the database, they replace the built-in ones in img/team/)
+var teamPhotos = {};
+var TEAM_PHOTO_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+var TEAM_KEY = 'prolead_team_photos';
+function memberKey(name){ return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80); }
+function memberPhoto(p){
+  var t = teamPhotos[memberKey(p.n)];
+  if(typeof t === 'string' && TEAM_PHOTO_RE.test(t)) return t;
+  return p.photo ? 'img/team/' + p.photo : '';
+}
 function memberBtn(p, gi, pi){
   if(!p.n) return '<span class="member tbc">To be confirmed</span>';
+  var src = memberPhoto(p);
   return '<button type="button" class="member" data-m="'+gi+'-'+pi+'"><span class="member-av">'+
-    (p.photo ? '<img src="img/team/'+escAttr(p.photo)+'" alt="" loading="lazy">' : esc(initials(p.n)))+'</span><span>'+esc(p.n)+'</span></button>';
+    (src ? '<img src="'+escAttr(src)+'" alt="" loading="lazy">' : esc(initials(p.n)))+'</span><span>'+esc(p.n)+'</span></button>';
 }
 function committeeGroup(g, gi){
   return '<div class="cm-card cm-'+g.tier+'"><h3>'+esc(g.role)+'</h3><div class="cm-people">'+
@@ -390,8 +401,9 @@ function renderCommittee(){
 function openMember(g, p){
   document.getElementById('member-role').textContent = g.role;
   document.getElementById('member-name').textContent = p.n;
-  document.getElementById('member-photo').innerHTML = p.photo
-    ? '<img src="img/team/'+escAttr(p.photo)+'" alt="'+escAttr(p.n)+'">'
+  var src = memberPhoto(p);
+  document.getElementById('member-photo').innerHTML = src
+    ? '<img src="'+escAttr(src)+'" alt="'+escAttr(p.n)+'">'
     : '<div class="member-ph"><span>'+esc(initials(p.n))+'</span><small>Photo coming soon 📸</small></div>';
   document.getElementById('member-scrim').classList.add('show');
   try{ SFX.pop(); }catch(e){}
@@ -400,6 +412,20 @@ document.getElementById('member-close').addEventListener('click', function(){ do
 document.getElementById('member-scrim').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('show'); });
 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.getElementById('member-scrim').classList.remove('show'); });
 renderCommittee();
+function applyTeamPhotos(map){
+  teamPhotos = map;
+  renderCommittee();
+  if(currentView() === 'admin' && adminSec === 'team') renderAdminTeam();
+}
+if(cloud){
+  cloud.db.collection('team').onSnapshot(function(snap){
+    var map = {};
+    snap.forEach(function(d){ var v = d.data(); if(v && typeof v.photo === 'string') map[d.id] = v.photo; });
+    applyTeamPhotos(map);
+  }, function(err){ console.error(err); });
+}else{
+  try{ applyTeamPhotos(JSON.parse(localStorage.getItem(TEAM_KEY) || '{}') || {}); }catch(e){}
+}
 
 /* ---------- chip rendering ---------- */
 function chipHTML(c, active){
@@ -1086,11 +1112,33 @@ var SFX = {
   fanfare:function(){ tone([523,659,784,1047,784,1047], {step:.11, dur:.24, type:'triangle'}); }
 };
 
-/* background music: "Berapa Kali Kita Akan Saling Memaafkan" (audio/berapa-kali.mp3) */
-var music = {on: player.music !== false, playing:false, timer:null, bus:null, session:null, nextBar:0, bar:0};
-// Background song: "Berapa Kali Kita Akan Saling Memaafkan" (Pamungkas). Browsers block sound until the visitor taps, so it starts on the first tap.
-var song = new Audio('audio/berapa-kali.mp3');
+/* background music: the admin picks one song (saved in the database) and it plays for everyone.
+   Browsers block sound until the visitor taps, so it starts on the first tap. */
+var KM = 'Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0';
+var SONGS = [
+  {id:'berapa-kali', name:'Berapa Kali Kita Akan Saling Memaafkan', by:'Pamungkas', mood:'Heartfelt'},
+  {id:'sesi-potret', name:'Sesi Potret', by:'feat. Ari Lesmana', mood:'Nostalgic'},
+  {id:'carefree', name:'Carefree', by:'Kevin MacLeod', mood:'Cheerful & fun', credit:KM},
+  {id:'wholesome', name:'Wholesome', by:'Kevin MacLeod', mood:'Calm & warm', credit:KM},
+  {id:'heroic-age', name:'Heroic Age', by:'Kevin MacLeod', mood:'Epic adventure', credit:KM}
+];
+var DEFAULT_SONG = 'berapa-kali', SONG_KEY = 'prolead_song';
+function songById(id){ return SONGS.find(function(s){ return s.id === id; }) || songById(DEFAULT_SONG); }
+var music = {on: player.music !== false, playing:false, songId:DEFAULT_SONG};
+var song = new Audio('audio/' + DEFAULT_SONG + '.mp3');
 song.loop = true; song.preload = 'none'; song.volume = 0.35;
+function setSong(id){
+  var s = songById(id);
+  var credit = document.getElementById('song-credit');
+  credit.hidden = !s.credit;
+  credit.textContent = s.credit ? '♫ ' + s.name + ': ' + s.credit : '';
+  if(s.id === music.songId) return;
+  music.songId = s.id;
+  var wasPlaying = !song.paused;
+  song.src = 'audio/' + s.id + '.mp3';
+  if(wasPlaying) startMusic();
+  if(currentView() === 'admin' && adminSec === 'song') renderAdminSongs();
+}
 song.addEventListener('playing', function(){ music.playing = true; renderMusicBtn(); });
 song.addEventListener('pause', function(){ music.playing = false; renderMusicBtn(); });
 function startMusic(){
@@ -1133,6 +1181,14 @@ document.addEventListener('visibilitychange', function(){   // pause while the t
   if(document.hidden){ music.resume = !song.paused; song.pause(); }
   else if(music.resume && music.on){ music.resume = false; startMusic(); }
 });
+// the song the admin chose (live: a change reaches every open page)
+if(cloud){
+  cloud.db.collection('settings').doc('site').onSnapshot(function(d){
+    setSong(d.exists && d.data().song ? d.data().song : DEFAULT_SONG);
+  }, function(err){ console.error(err); setSong(DEFAULT_SONG); });
+}else{
+  try{ setSong(localStorage.getItem(SONG_KEY) || DEFAULT_SONG); }catch(e){ setSong(DEFAULT_SONG); }
+}
 renderMusicBtn();
 
 /* Mochi the mascot */
@@ -1714,6 +1770,117 @@ document.getElementById('share-another').addEventListener('click', function(){
 });
 
 /* ---------- ADMIN ---------- */
+var adminSec = 'review';
+
+// --- Background song picker ---
+var preview = new Audio(); preview.volume = 0.6;
+var previewId = null;
+preview.addEventListener('ended', function(){ previewId = null; renderAdminSongs(); });
+function stopPreview(){ preview.pause(); previewId = null; }
+function renderAdminSongs(){
+  var box = document.getElementById('admin-songs');
+  box.innerHTML = SONGS.map(function(s){
+    var on = s.id === music.songId, playing = previewId === s.id;
+    return '<div class="song-row'+(on?' on':'')+'">'+
+      '<button type="button" class="song-play" data-preview="'+s.id+'" aria-label="'+(playing?'Stop preview of ':'Preview ')+escAttr(s.name)+'">'+(playing?'■':'▶')+'</button>'+
+      '<div class="song-info"><b>'+esc(s.name)+'</b><span>'+esc(s.by)+' · <i>'+esc(s.mood)+'</i></span></div>'+
+      (on ? '<span class="song-now">Playing now</span>' : '<button type="button" class="btn btn-sm btn-accent" data-use="'+s.id+'">Use this song</button>')+
+    '</div>';
+  }).join('') + '<p class="hint" style="margin-top:12px">The three Kevin MacLeod songs are free to use. While one of them is playing, a small credit line shows at the bottom of the page, as their licence asks.</p>';
+  box.querySelectorAll('[data-preview]').forEach(function(b){
+    b.onclick = function(){
+      var id = b.dataset.preview;
+      if(previewId === id){ stopPreview(); renderAdminSongs(); return; }
+      stopMusic();   // don't play two songs at once
+      preview.src = 'audio/' + id + '.mp3'; previewId = id;
+      var p = preview.play(); if(p && p.catch) p.catch(function(){ previewId = null; renderAdminSongs(); });
+      renderAdminSongs();
+    };
+  });
+  box.querySelectorAll('[data-use]').forEach(function(b){
+    b.onclick = function(){
+      var id = b.dataset.use, s = songById(id);
+      b.disabled = true; b.textContent = 'Saving…';
+      stopPreview();
+      var done = function(){ toast('Now playing for everyone: ' + s.name, '🎵'); music.on = true; player.music = true; savePlayer(); startMusic(); renderMusicBtn(); };
+      if(!cloud){ try{ localStorage.setItem(SONG_KEY, id); }catch(e){} setSong(id); done(); renderAdminSongs(); return; }
+      cloud.db.collection('settings').doc('site').set({song:id}).then(done).catch(function(err){
+        console.error(err); toast('Could not change the song. Try again.', '⚠️'); renderAdminSongs();
+      });
+    };
+  });
+}
+
+// --- Committee photos ---
+var teamTarget = null;
+function renderAdminTeam(){
+  var box = document.getElementById('admin-team');
+  box.innerHTML = '<div class="team-grid">' + COMMITTEE.map(function(g){
+    return g.people.filter(function(p){ return p.n; }).map(function(p){
+      var key = memberKey(p.n), src = memberPhoto(p), custom = !!teamPhotos[key];
+      return '<div class="team-item">'+
+        '<div class="team-thumb">'+(src ? '<img src="'+escAttr(src)+'" alt="">' : '<span>'+esc(initials(p.n))+'</span>')+'</div>'+
+        '<div class="team-info"><span class="team-role">'+esc(g.role)+'</span><b>'+esc(p.n)+'</b><small>'+(custom ? 'Changed by admin' : (p.photo ? 'Original photo' : 'No photo yet'))+'</small>'+
+        '<div class="team-btns"><button type="button" class="btn btn-sm btn-accent" data-change="'+escAttr(key)+'">Change photo</button>'+
+        (custom ? '<button type="button" class="btn btn-sm btn-ghost" data-reset="'+escAttr(key)+'">Reset</button>' : '')+'</div></div>'+
+      '</div>';
+    }).join('');
+  }).join('') + '</div>';
+  box.querySelectorAll('[data-change]').forEach(function(b){
+    b.onclick = function(){ teamTarget = b.dataset.change; var f = document.getElementById('team-file'); f.value = ''; f.click(); };
+  });
+  box.querySelectorAll('[data-reset]').forEach(function(b){
+    b.onclick = function(){
+      if(!confirm('Go back to the original photo?')) return;
+      saveTeamPhoto(b.dataset.reset, null).then(function(){ toast('Photo reset', '↩️'); })
+        .catch(function(err){ console.error(err); toast('Could not reset the photo. Try again.', '⚠️'); });
+    };
+  });
+}
+function saveTeamPhoto(key, dataUrl){
+  if(!cloud){
+    var map = Object.assign({}, teamPhotos);
+    if(dataUrl) map[key] = dataUrl; else delete map[key];
+    try{ localStorage.setItem(TEAM_KEY, JSON.stringify(map)); }catch(e){ return Promise.reject(e); }
+    applyTeamPhotos(map);
+    return Promise.resolve();
+  }
+  var ref = cloud.db.collection('team').doc(key);
+  return dataUrl ? ref.set({photo:dataUrl}) : ref.delete();
+}
+// shrink the photo (max 720 x 900, JPEG) so it fits in the database
+function teamPhotoData(img){
+  var k = Math.min(1, 720 / img.naturalWidth, 900 / img.naturalHeight);
+  var cv = document.createElement('canvas');
+  cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+  var ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(img, 0, 0, cv.width, cv.height);
+  for(var q = .88; q > .4; q -= .08){
+    var out = cv.toDataURL('image/jpeg', q);
+    if(out.length < 600000) return out;
+  }
+  return null;
+}
+document.getElementById('team-file').addEventListener('change', function(){
+  var file = this.files && this.files[0], key = teamTarget;
+  if(!file || !key || !isAdmin) return;
+  if(!/^image\//.test(file.type)){ toast('Please choose a photo', '⚠️'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var data = teamPhotoData(img);
+      if(!data){ toast('That photo is too big. Try a smaller one.', '⚠️'); return; }
+      toast('Uploading photo…', '⏳');
+      saveTeamPhoto(key, data).then(function(){ toast('Photo updated for everyone', '✅'); })
+        .catch(function(err){ console.error(err); toast('Could not save the photo. Try again.', '⚠️'); });
+    };
+    img.onerror = function(){ toast('Could not open that photo', '⚠️'); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 if(cloud){
   document.getElementById('admin-email').hidden = false;
   document.getElementById('admin-pw').type = 'password';
@@ -1760,6 +1927,15 @@ function renderAdmin(){
   document.getElementById('admin-gate').hidden = isAdmin;
   document.getElementById('admin-panel').hidden = !isAdmin;
   if(!isAdmin) return;
+
+  document.querySelectorAll('#admin-secs .admin-sec').forEach(function(b){
+    b.classList.toggle('active', b.dataset.sec === adminSec);
+    b.setAttribute('aria-pressed', String(b.dataset.sec === adminSec));
+    b.onclick = function(){ adminSec = b.dataset.sec; renderAdmin(); };
+  });
+  ['review','song','team'].forEach(function(s){ document.getElementById('admin-sec-' + s).hidden = s !== adminSec; });
+  if(adminSec === 'song'){ renderAdminSongs(); return; }
+  if(adminSec === 'team'){ renderAdminTeam(); return; }
 
   var counts = {pending:0, approved:0, rejected:0};
   posts.forEach(function(p){ counts[p.status] = (counts[p.status]||0)+1; });

@@ -1168,3 +1168,41 @@ body.show-mode .pm-buddy{display:none}
 /* duty lists: alternate white / soft blue rows */
 .duty-card tbody tr:nth-child(odd) td{background:#fff}
 .duty-card tbody tr:nth-child(even) td{background:#EAF6FF}
+
+/* ===== admin: sections, song picker, committee photos ===== */
+.admin-secs{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 22px; padding:6px; background:#fff; border:3px solid var(--outline); border-radius:18px; box-shadow:0 4px 0 var(--outline)}
+.admin-sec{flex:1 1 160px; padding:10px 14px; border:none; border-radius:12px; background:transparent; font:inherit; font-family:var(--font-head); font-weight:800; font-size:.92rem; color:var(--outline); cursor:pointer; transition:background .15s}
+.admin-sec:hover{background:var(--sky-tint)}
+.admin-sec.active{background:var(--sun)}
+.admin-sec:focus-visible{outline:3px solid var(--purple); outline-offset:2px}
+.admin-sec-hint{margin:0 0 16px}
+.song-list{display:flex; flex-direction:column; gap:10px}
+.song-row{display:flex; align-items:center; gap:12px; padding:10px 14px; background:#fff; border:3px solid var(--outline); border-radius:18px; box-shadow:0 4px 0 var(--outline)}
+.song-row.on{background:#FFF6D6}
+.song-play{flex:none; width:42px; height:42px; border-radius:50%; border:3px solid var(--outline); background:var(--sky); color:var(--outline); font-size:.9rem; cursor:pointer}
+.song-play:hover{background:#9AD8FF}
+.song-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.song-info b{color:var(--outline); line-height:1.25}
+.song-info span{font-size:.82rem; color:var(--muted); font-weight:700}
+.song-now{flex:none; padding:6px 12px; border-radius:999px; background:var(--minty); border:2px solid var(--outline); font-size:.8rem; font-weight:800; color:var(--outline)}
+.song-credit{margin-top:8px; font-size:.72rem; font-weight:600; opacity:.8}
+.team-group{margin-bottom:22px}
+.team-group h3{margin:0 0 10px; font-size:1rem; color:var(--outline)}
+.team-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px}
+.team-item{display:flex; gap:12px; align-items:center; padding:10px; background:#fff; border:3px solid var(--outline); border-radius:16px}
+.team-thumb{flex:none; width:64px; height:80px; border-radius:12px; overflow:hidden; border:2px solid var(--outline); background:var(--bubble); display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-weight:800; color:var(--outline)}
+.team-thumb img{width:100%; height:100%; object-fit:cover; object-position:50% 18%}
+.team-info{min-width:0; display:flex; flex-direction:column; gap:3px}
+.team-info b{font-size:.86rem; color:var(--outline); line-height:1.25}
+.team-role{align-self:flex-start; padding:1px 8px; border-radius:999px; background:var(--sky-tint); border:1.5px solid var(--outline); font-size:.68rem; font-weight:800; color:var(--outline)}
+.team-info small{font-size:.75rem; color:var(--muted); font-weight:700}
+.team-btns{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px}
+.team-btns .btn{padding:6px 12px; font-size:.78rem}
+@media (max-width:600px){
+  .admin-secs{flex-wrap:nowrap; gap:4px; padding:5px}
+  .admin-sec{flex:1 1 0; min-width:0; padding:9px 4px; font-size:.74rem; line-height:1.2}
+  .song-row{flex-wrap:wrap}
+  .song-info{flex:1 1 calc(100% - 60px)}
+  .song-row .btn, .song-now{margin-left:54px}
+  .team-grid{grid-template-columns:1fr}
+}
