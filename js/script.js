@@ -1825,7 +1825,7 @@ function renderAdminTeam(){
         '<div class="team-info"><span class="team-role">'+esc(g.role)+'</span><b>'+esc(p.n)+'</b><small>'+(custom ? 'Changed by admin' : (p.photo ? 'Original photo' : 'No photo yet'))+'</small>'+
         '<div class="team-btns"><button type="button" class="btn btn-sm btn-accent" data-change="'+escAttr(key)+'">Change photo</button>'+
         (src ? '<button type="button" class="btn btn-sm btn-ghost" data-adjust="'+escAttr(key)+'">Adjust</button>' : '')+
-        (custom ? '<button type="button" class="btn btn-sm btn-ghost" data-reset="'+escAttr(key)+'">Reset</button>' : '')+'</div></div>'+
+        '</div></div>'+
       '</div>';
     }).join('');
   }).join('') + '</div>';
@@ -1836,13 +1836,6 @@ function renderAdminTeam(){
     b.onclick = function(){
       var p = memberByKey(b.dataset.adjust);
       if(p) openCropper(b.dataset.adjust, memberPhoto(p));
-    };
-  });
-  box.querySelectorAll('[data-reset]').forEach(function(b){
-    b.onclick = function(){
-      if(!confirm('Go back to the original photo?')) return;
-      saveTeamPhoto(b.dataset.reset, null).then(function(){ toast('Photo reset', '↩️'); })
-        .catch(function(err){ console.error(err); toast('Could not reset the photo. Try again.', '⚠️'); });
     };
   });
 }
